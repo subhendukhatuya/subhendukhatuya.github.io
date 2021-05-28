@@ -1,0 +1,27 @@
+name: Sankarshan Mridha's blog
+title: Sankarshan Mridha
+url: https://msank00.github.io
+baseurl: ""
+twitter_username: imridhasankar
+github_username:  msank00
+linkedin_username: sankarshanmridha
+description: On machine learning, deep learning, nlp, computer vision, statistics and other areas of data science
+author: Sankarshan Mridha
+# email: sanakarshan7@gmail.com
+permalink: /blog/:year/:month/:day/:title
+theme: minima
+
+# Conversion
+markdown: kramdown
+
+plugins:
+  - "disqus-for-jekyll"
+  - jekyll-feed
+  - jemoji
+
+header_pages:
+  #- resume.md
+  - publications.md
+  - blog/index.html
+  - index.md
+  - projects.md
