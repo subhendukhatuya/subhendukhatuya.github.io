@@ -15,6 +15,7 @@ theme: jekyll-theme-cayman
 markdown: kramdown
 
 plugins:
+  - "disqus-for-jekyll"
   - jekyll-feed
   - jemoji
 
