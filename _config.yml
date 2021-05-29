@@ -5,7 +5,7 @@ baseurl: ""
 twitter_username:
 github_username:  subhendukhatuya
 linkedin_username:
-description: On machine learning, deep learning, nlp, computer vision, statistics and other areas of data science
+description: Machine learning, Deep learning, NLP, Computer Vision and other areas of data science.
 author: Subhendu Khatuya
 # email: sanakarshan7@gmail.com
 permalink: /blog/:year/:month/:day/:title
