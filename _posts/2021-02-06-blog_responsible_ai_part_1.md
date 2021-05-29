@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Responsible AI"
+title:  "Responsible AI Blog"
 date:   2021-02-06 00:00:10 -0030
 categories: responsibleai
 mathjax: true
