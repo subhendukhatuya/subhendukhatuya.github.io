@@ -9,7 +9,7 @@ description: Machine learning, Deep learning, NLP, Computer Vision and other are
 author: Subhendu Khatuya
 # email: sanakarshan7@gmail.com
 permalink: /blog/:year/:month/:day/:title
-theme: minima
+theme: github-light
 
 # Conversion
 markdown: kramdown
