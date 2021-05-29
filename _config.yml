@@ -2,11 +2,11 @@ name: Sankarshan Mridha's blog
 title: Sankarshan Mridha
 url: https://subhendukhatuya.github.io/
 baseurl: ""
-twitter_username: imridhasankar
-github_username:  msank00
-linkedin_username: sankarshanmridha
+twitter_username:
+github_username:  subhendukhatuya
+linkedin_username:
 description: On machine learning, deep learning, nlp, computer vision, statistics and other areas of data science
-author: Sankarshan Mridha
+author: Subhendu Khatuya
 # email: sanakarshan7@gmail.com
 permalink: /blog/:year/:month/:day/:title
 theme: minima
