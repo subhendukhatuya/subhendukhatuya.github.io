@@ -1,3 +1,3 @@
-# Repository for sidravi1.github.io
+# Repository for subhendukhatuya.github.io
 
-- Go to [site](https://sidravi1.github.io/)
+- Go to [site](https://subhendukhatuya.github.io/)
