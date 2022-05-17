@@ -5,7 +5,16 @@ title: Projects
 #author_profile: true
 ---
 
-## Weekend Projects
+## Projects
+
+### XBRL Financial Tagging:
+Built a **CNN** (Convolution Neural Network) model to map various sections (text paragraph) of directors report of a financial statements. Here, I automated the tagging of various paragraphs into suitable business compatible header by multi class classification using CNN. Also performed sentiment analysis to triage auditor's comments. 
+I also contributed to build the framework for mapping system fields from client's financial data to tax filing template, using \textbf{Siamese-LSTM} architecture.
+
+ ### Sentence Similarity and Clustering:
+ The task is to find similar ideas (given in text) provided by various participants in an innovation challenge. Here, I built similarity service after converting the ideas into **USE** (Universal Sentence Encoder) embedding. Also clustered the similar ideas using embedding matrix with the help of **Affinity Propagation**.
+
+
 
 ### :camera: :bookmark_tabs: Image Caption Generation
 
