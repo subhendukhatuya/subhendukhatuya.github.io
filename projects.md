@@ -5,7 +5,7 @@ title: Projects
 #author_profile: true
 ---
 
-## Projects
+## Companny Projects
 
 ### **XBRL Financial Tagging**
 Built a **CNN** (Convolution Neural Network) model to map various sections (text paragraph) of directors report of a financial statements. Here, I automated the tagging of various paragraphs into suitable business compatible header by multi class classification using CNN. Also performed sentiment analysis to triage auditor's comments. 
@@ -25,6 +25,8 @@ Built a deep learning based hybrid recommendation system which includes both con
 
 ### **Code Language Identification**
 Built a framework to predict programming language of source code using a pre-trained deep learning model with accuracy more than 90%. 
+
+## Masters Projects
 
 ### **ADELE: Anomaly Detection from Event Log Empiricism**
 Selecting diligent features from storage system log, we developed an effective machine learning model _ADELE_ for anomaly detection. The
