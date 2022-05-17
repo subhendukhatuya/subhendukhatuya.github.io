@@ -35,7 +35,7 @@ model learns from system log history to assess the baseline of normal behavior a
 ### **GBTM: Graph Based Troubleshooting Method for Handling Customer Cases Using Storage System Log**
 We developed an unsupervised troubleshooting methodology for identifying problematic modules responsible for system failure, thus reducing the complexity of the diagnostic process. First, we construct a sequence of time evolving dynamic graph from the collected system log of customer filed cases. We extract the initial set of problem creating modules identifying the anomalous substructure in the graph. In the second step, we extend this set of anomalous modules by detecting communities in the graph. Apart from providing troubleshooting modules, we rank the problem creating modules  which might be helpful for support engineers.
 
-
+## Weekend Projects
 ### :camera: :bookmark_tabs: Image Caption Generation
 
 `Image Caption Generation` is a challenging task where a textual description is generated given a picture. It needs both methods from **Computer Vision** and **Natural Language Processing** to connect the image feature with words in the right order.
