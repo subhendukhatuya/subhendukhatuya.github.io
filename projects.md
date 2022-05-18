@@ -6,6 +6,7 @@ title: Projects
 ---
 
 ## Companny Projects
+<hr style="border:2px solid gray">
 
 ### **XBRL Financial Tagging**
 Built a **CNN** (Convolution Neural Network) model to map various sections (text paragraph) of directors report of a financial statements. Here, I automated the tagging of various paragraphs into suitable business compatible header by multi class classification using CNN. Also performed sentiment analysis to triage auditor's comments. 
@@ -27,6 +28,7 @@ Built a deep learning based hybrid recommendation system which includes both con
 Built a framework to predict programming language of source code using a pre-trained deep learning model with accuracy more than 90%. 
 
 ## Masters Projects
+<hr style="border:2px solid gray">
 
 ### **ADELE: Anomaly Detection from Event Log Empiricism**
 Selecting diligent features from storage system log, we developed an effective machine learning model _ADELE_ for anomaly detection. The
@@ -36,6 +38,7 @@ model learns from system log history to assess the baseline of normal behavior a
 We developed an unsupervised troubleshooting methodology for identifying problematic modules responsible for system failure, thus reducing the complexity of the diagnostic process. First, we construct a sequence of time evolving dynamic graph from the collected system log of customer filed cases. We extract the initial set of problem creating modules identifying the anomalous substructure in the graph. In the second step, we extend this set of anomalous modules by detecting communities in the graph. Apart from providing troubleshooting modules, we rank the problem creating modules  which might be helpful for support engineers.
 
 ## Weekend Projects
+<hr style="border:2px solid gray">
 ### :camera: :bookmark_tabs: Image Caption Generation
 
 `Image Caption Generation` is a challenging task where a textual description is generated given a picture. It needs both methods from **Computer Vision** and **Natural Language Processing** to connect the image feature with words in the right order.
