@@ -10,6 +10,9 @@ Earlier I received my Master of Science (MS by research) degree from the [<span 
 
 I received my Bachelor of Technology (B. Tech) degree in [<span style="color:blue">Computer Science and Engineering</span>](https://kgec.edu.in/department?name=cse) from [<span style="color:blue">Kalyani Govt. Engg. College</span>](https://kgec.edu.in/), India in 2014. 
 
+
+<br/><br/>
+
 # Highlights
 
 2022 	
@@ -19,4 +22,5 @@ I received my Bachelor of Technology (B. Tech) degree in [<span style="color:blu
 ```sh
     [Apr] : Honoured to be selected for the prestigious Prime Minister's Research Fellowship (PMRF) May cycle 2022
 ```
+
 
