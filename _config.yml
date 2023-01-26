@@ -1,10 +1,11 @@
 name: Subhendu Khatuya's blog
 title: Subhendu Khatuya
+PMRF Fellow
 url: https://subhendukhatuya.github.io/
 baseurl: ""
 twitter_username:
 github_username:  subhendukhatuya
-linkedin_username: https://www.linkedin.com/in/subhendu-khatuya-543140a8/
+linkedin_username: subhendu-khatuya-543140a8
 description: Machine learning, Deep learning, NLP, Computer Vision and other areas of data science.
 author: Subhendu Khatuya
 # email: sanakarshan7@gmail.com
