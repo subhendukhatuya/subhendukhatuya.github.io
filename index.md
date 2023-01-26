@@ -20,9 +20,7 @@ I received my Bachelor of Technology (B. Tech) degree in [<span style="color:blu
     [Dec] : Attended IndoML-2022, at IITGN, 15-17th December
 ```
 ```
-    [Apr] : Honoured to be selected for the 
-        prestigious Prime Minister's Research 
-        Fellowship (PMRF) May cycle 2022
+    [Apr] : Honoured to be selected for the prestigious Prime Minister's Research Fellowship (PMRF) May cycle 2022
 ```
 
 
