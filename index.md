@@ -18,7 +18,7 @@ I received my Bachelor of Technology (B. Tech) degree in [<span style="color:blu
 
 2023 	
 ```
-    [Apr] : Poster accepted at AI.Imapct 23 at IITB, 28-29th April
+    [Apr] : Poster accepted at AI.Imapct23 at IITB, 28-29th April
 ```
 
 2022 	
