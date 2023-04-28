@@ -12,10 +12,10 @@ title: Projects
 Built a **CNN** (Convolution Neural Network) model to map various sections (text paragraph) of directors report of a financial statements. Here, I automated the tagging of various paragraphs into suitable business compatible header by multi class classification using CNN. Also performed sentiment analysis to triage auditor's comments. 
 I also contributed to build the framework for mapping system fields from client's financial data to tax filing template, using \textbf{Siamese-LSTM} architecture.
 
- ### **Sentence Similarity and Clustering**
+### **Sentence Similarity and Clustering**
 The task is to find similar ideas (given in text) provided by various participants in an innovation challenge. Here, I built similarity service after converting the ideas into **USE** (Universal Sentence Encoder) embedding. Also clustered the similar ideas using embedding matrix with the help of **Affinity Propagation**.
  
- ### **Idea to Reviewer Matching**
+### **Idea to Reviewer Matching**
 The problem is to assign a set of reviewers for an idea submitted by a user in an innovation challenge. The reviewers have to be selected based on his/her competency/skills. So, given an idea the first task is to extract relevant skills (by which we can map reviewer) from a global set of skill-set to understand that idea. First, I used **RoBERTa** model to extract the embedding of submitted idea and mapped that to top-n skill set. Similarly **multilingual-USE** model is used to get another top-n skill set. For better precise result, intersection of those two skill-set is taken as final skills to understand that idea better. 
  
 ### **Online Learning**
