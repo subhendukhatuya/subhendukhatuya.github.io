@@ -15,6 +15,12 @@ I received my Bachelor of Technology (B. Tech) degree in [<span style="color:blu
 
 # Highlights
 
+
+2023 	
+```
+    [Apr] : Poster accepted at AI.Imapct 23 at IITB, 28-29th April
+```
+
 2022 	
 ```
     [Dec] : Attended IndoML-2022, at IITGN, 15-17th December
