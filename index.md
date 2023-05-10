@@ -18,6 +18,7 @@ I received my Bachelor of Technology (B. Tech) degree in [<span style="color:blu
 
 2023 	
 ```
+    [May] : Paper accepted at ACL-23, Toronto, Canada, 9-14 July
     [Apr] : Poster accepted at AI.Imapct23 at IITB, 28-29th April
 ```
 
