@@ -8,7 +8,7 @@ title: Publications
 
 1.  \"How COVID-19 has Impacted the Anti-Vaccine Discourse: A Large-Scale Twitter Study
 Spanning Pre-COVID and Post-COVID Era\" - Soham Poddar, **Subhendu Khatuya**, Rajdeep Mukherjee, Sapatarshi Ghosh, Niloy Ganguly , AAAI Conference on Web and Social Media
-(ICWSM) BUFFALO, NEW YORK, USA, 3-6 June 2024 (Accepted)
+(**AAAI-ICWSM**) BUFFALO, NEW YORK, USA, 3-6 June 2024 (Accepted)
 
 3. \"Financial Numeric Extreme Labelling: A Dataset and Benchmarking for XBRL Tagging\" - **Subhendu Khatuya**, Soumya Sharma, Manjunath Hegde, Afreen Shaikh,
 Koustuv Dasgupta, Pawan Goyal, Niloy Ganguly accepted as short Paper In Proceedings of Association for Computational Linguistics (_**ACL**_),Toronto, Canada, 9-14 July 2023 (Accepted)
