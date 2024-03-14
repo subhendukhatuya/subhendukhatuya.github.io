@@ -15,6 +15,12 @@ I received my Bachelor of Technology (B. Tech) degree in [<span style="color:blu
 
 # Highlights
 
+2024	
+```
+    [Mar] : Paper accepted at NAACL-2024,  Mexico City, Mexico, June 16-21, 2024
+```
+
+
 
 2023 	
 ```
