@@ -6,7 +6,10 @@ title: Publications
 ---
 
 
-1.  \"How COVID-19 has Impacted the Anti-Vaccine Discourse: A Large-Scale Twitter Study
+1. Parameter-Efficient Instruction Tuning of Large Language Models For Extreme Financial Numeral Labelling - **Subhendu Khatuya**, Rajdeep Mukherjee, Akash Ghosh, Manjunath Hegde, Koustuv Dasgupta, Niloy Ganguly, Saptarshi Ghosh, Pawan Goyal, In Proceedings of
+North American Chapter of the Association for Computational Linguistics (**NAACL**), Mexico City, Mexico, June 16-21 2024 (Accepted)
+
+2.  \"How COVID-19 has Impacted the Anti-Vaccine Discourse: A Large-Scale Twitter Study
 Spanning Pre-COVID and Post-COVID Era\" - Soham Poddar, **Subhendu Khatuya**, Rajdeep Mukherjee, Sapatarshi Ghosh, Niloy Ganguly , AAAI Conference on Web and Social Media
 (**AAAI-ICWSM**) BUFFALO, NEW YORK, USA, 3-6 June 2024 (Accepted)
 
