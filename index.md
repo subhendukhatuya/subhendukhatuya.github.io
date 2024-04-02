@@ -18,6 +18,7 @@ I received my Bachelor of Technology (B. Tech) degree in [<span style="color:blu
 2024	
 ```
     [Mar] : Paper accepted at NAACL-2024,  Mexico City, Mexico, June 16-21, 2024
+    [Mar] : Paper accepted at SIGIR-2024, Washington D.C., USA, July 14-18, 2024 
 ```
 
 
