@@ -17,7 +17,8 @@ I received my Bachelor of Technology (B. Tech) degree in [<span style="color:blu
 
 2024	
 ```
-    [Jun] : Extended Abstract accepted at IJCAI-DC-2024, Jeju Island, South Korea, Auguts 3-9, 2024
+    [July] : Abstract accepted at KDD-DC-2024, Barcelona, Spain, August 25-29, 2024
+    [Jun] : Extended Abstract accepted at IJCAI-DC-2024, Jeju Island, South Korea, August 3-9, 2024
     [Mar] : Paper accepted at NAACL-2024,  Mexico City, Mexico, June 16-21, 2024
     [APr] : Paper accepted at SIGIR-2024, Washington D.C., USA, July 14-18, 2024 
 ```
