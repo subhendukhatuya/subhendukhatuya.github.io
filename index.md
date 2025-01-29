@@ -14,13 +14,22 @@ I received my Bachelor of Technology (B. Tech) degree in [<span style="color:blu
 <br/><br/>
 
 # Highlights
+2025
+```
+    [Jan] : Paper accepted at AAAI-2025, Philadelphia, Pennsylvania, USA, Feb 25 - Mar 4
+    [Jan] : Invited to attend Google DeepMind Research Symposium at Bengaluru, Jan 27- Jan28
+
 
 2024	
 ```
-    [July] : Abstract accepted at KDD-DC-2024, Barcelona, Spain, August 25-29, 2024
+    [Nov] : Invited to attend Amazon Research Day (ARD) at Bengaluru, Nov 20-22
+    [July]: Abstract accepted at KDD-DC-2024, Barcelona, Spain, August 25-29, 2024
     [Jun] : Extended Abstract accepted at IJCAI-DC-2024, Jeju Island, South Korea, August 3-9, 2024
     [Mar] : Paper accepted at NAACL-2024,  Mexico City, Mexico, June 16-21, 2024
     [Apr] : Paper accepted at SIGIR-2024, Washington D.C., USA, July 14-18, 2024 
+    [Feb] : Invited to attend ACM India Pingala Interactions in Computing (PIC2024) at beautiful Infosys Mysore campus, Feb 3-6, 2024
+    [Feb] : Invited to attened Research Week with Google 2024,Bengaluru, Feb 1-3
+
 ```
 
 
@@ -30,6 +39,7 @@ I received my Bachelor of Technology (B. Tech) degree in [<span style="color:blu
     [Nov] : Paper accepted at AAAI-ICWSM, Buffalo, New York, 3-6 June 2024
     [May] : Paper accepted at ACL-23, Toronto, Canada, 9-14 July
     [Apr] : Poster accepted at AI.Imapct23 at IITB, 28-29th April
+    [Jan] : Invited to attened Research Week with Google 2024, Bengaluru, Jan 29-31
 ```
 
 2022 	
