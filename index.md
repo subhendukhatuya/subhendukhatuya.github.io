@@ -17,7 +17,7 @@ I received my Bachelor of Technology (B. Tech) degree in [<span style="color:blu
 2025
 ```
     [Jan] : Paper accepted at AAAI-2025, Philadelphia, Pennsylvania, USA, Feb 25 - Mar 4
-    [Jan] : Invited to attend Google DeepMind Research Symposium at Bengaluru, Jan 27- Jan28
+    [Jan] : Invited to attend Google DeepMind Research Symposium at Bengaluru, Jan 27- Jan 28
 
 
 2024	
