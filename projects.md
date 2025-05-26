@@ -5,7 +5,7 @@ title: Projects
 #author_profile: true
 ---
 
-## Companny Projects
+## Company Projects
 <hr style="border:2px solid gray">
 
 ### **XBRL Financial Tagging**
