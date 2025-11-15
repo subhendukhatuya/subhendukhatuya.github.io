@@ -9,7 +9,8 @@ title: Publications
   
 2.  Label-semantics Aware Generative Approach for Domain-Agnostic Multilabel Classification - **Subhendu Khatuya**, S Naidu, S Ghosh, P Goyal, N Ganguly, In Proceedings of Association for Computational Linguistics (**ACL**), Vienna, Austria, July 27-Aug 1, 2025 (Accepted in Findings) **[[Paper]](https://aclanthology.org/2025.findings-acl.1145.pdf)**  **[[Code]](https://github.com/subhendukhatuya/Gen_Multilabel_Classification.git)**
 
-3. ExPERT: Modeling Human Behavior under External Stimuli Aware Personalized MTPP-  **Subhendu Khatuya**, R Vij, P Koley, S Datta, N Ganguly, In Proceedings of AAAI Conference on Artificial Intelligence (**AAAI**), Philadelphia, Feb 25-Mar 4, 2025 (Accepted at Main Technical Track)  **[[Paper]](https://ojs.aaai.org/index.php/AAAI/article/download/33960/36115)**  
+3. ExPERT: Modeling Human Behavior under External Stimuli Aware Personalized MTPP-  **Subhendu Khatuya**, R Vij, P Koley, S Datta, N Ganguly, In Proceedings of AAAI Conference on Artificial Intelligence (**AAAI**), Philadelphia, Feb 25-Mar 4, 2025 (Accepted at Main Technical Track)  **[[Paper]](https://ojs.aaai.org/index.php/AAAI/article/download/33960/36115)**  **[[Code]](https://github.com/subhendukhatuya/ExPERT.git)**
+
   
 4. Parameter-Efficient Instruction Tuning of Large Language Models For Extreme Financial Numeral Labelling - **Subhendu Khatuya**, R Mukherjee, A Ghosh, M Hegde, K Dasgupta, N Ganguly, S Ghosh, P Goyal, In Proceedings of
 North American Chapter of the Association for Computational Linguistics (**NAACL**), Mexico City, Mexico, June 16-21, 2024 (Accepted at Main conference) **[[Paper]]( https://aclanthology.org/2024.naacl-long.410/)**   **[[Code]](https://github.com/subhendukhatuya/FLAN-FinXC.git)**
