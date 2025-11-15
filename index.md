@@ -12,7 +12,7 @@ I received my Bachelor of Technology (B. Tech) degree in [<span style="color:blu
 
 
 <br/><br/>
-Feel free to connect me at <a href="kishalay.msit@gmail.com" target="_blank">kishalay[dot]msit[at]gmail[dot]com</a>.
+Feel free to connect me at <a href="subha.cse143@gmail.com" target="_blank">subha[dot]cse143[at]gmail[dot]com</a>.
 
                 </span><br><br>
 
@@ -24,7 +24,7 @@ Feel free to connect me at <a href="kishalay.msit@gmail.com" target="_blank">kis
                <a class="menulink" target="_blank" href="https://sharingmyexperiencesite.wordpress.com/">Blog </a><span class="tagsep">|</span>
                <a class="menulink" target="_blank" href="assets/pdf/Kishalay_Das_CV.pdf">CV </a>|</span>
                  <a class="menulink" target="_blank" href="https://youtube.com/user/kishalaydas">Youtube</a>
-            </article>
+  
 
 # Highlights
 2025
