@@ -16,6 +16,7 @@ I received my Bachelor of Technology (B. Tech) degree in [<span style="color:blu
 # Highlights
 2025
 ```
+    [Oct] : Paper accepted at EMNLP-2025, Suzhou, China, Nov 4- Nov 9
     [May] : Paper accepted at ACL-2025, Vienna, Austria, July 27- August 1
     [Jan] : Paper accepted at AAAI-2025, Philadelphia, Pennsylvania, USA, Feb 25 - Mar 4
     [Jan] : Invited to attend Google DeepMind Research Symposium at Bengaluru, Jan 27- Jan 28
