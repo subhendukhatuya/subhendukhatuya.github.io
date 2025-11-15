@@ -7,7 +7,7 @@ title: Publications
 
 1.  Program of Thoughts for Financial Reasoning: Leveraging Dynamic In-Context Examples and Generative Retrieval - **Subhendu Khatuya**, S Naidu, P Goyal, N Ganguly, In Proceedings of Empirical Methods in Natural Language Processing  (**EMNLP**), Suzhou, China, Nov 4-Nov 9, 2025 (Accepted at Main conference) **[[Paper]](https://aclanthology.org/2025.emnlp-main.1577.pdf)**   **[[Code]](https://github.com/subhendukhatuya/FINDER_POT_Financial_Numeric_Reasoning)**
   
-2.  Label-semantics Aware Generative Approach for Domain-Agnostic Multilabel Classification - **Subhendu Khatuya**, S Naidu, S Ghosh, P Goyal, N Ganguly, In Proceedings of Association for Computational Linguistics (**ACL**), Vienna, Austria, July 27-Aug 1, 2025 (Accepted in Findings) **[[Paper]](https://aclanthology.org/2025.findings-acl.1145.pdf)**   **[[Code]](https://github.com/subhendukhatuya/Gen_ Multilabel_Classification.git)**
+2.  Label-semantics Aware Generative Approach for Domain-Agnostic Multilabel Classification - **Subhendu Khatuya**, S Naidu, S Ghosh, P Goyal, N Ganguly, In Proceedings of Association for Computational Linguistics (**ACL**), Vienna, Austria, July 27-Aug 1, 2025 (Accepted in Findings) **[[Paper]](https://aclanthology.org/2025.findings-acl.1145.pdf)**  **[[Code]](https://github.com/subhendukhatuya/Gen_ Multilabel_Classification.git)**
 
 3. ExPERT: Modeling Human Behavior under External Stimuli Aware Personalized MTPP-  **Subhendu Khatuya**, R Vij, P Koley, S Datta, N Ganguly, In Proceedings of AAAI Conference on Artificial Intelligence (**AAAI**), Philadelphia, Feb 25-Mar 4, 2025 (Accepted at Main Technical Track)  **[[Paper]](https://ojs.aaai.org/index.php/AAAI/article/download/33960/36115)**  
   
