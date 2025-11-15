@@ -12,6 +12,19 @@ I received my Bachelor of Technology (B. Tech) degree in [<span style="color:blu
 
 
 <br/><br/>
+Feel free to connect me at <a href="kishalay.msit@gmail.com" target="_blank">kishalay[dot]msit[at]gmail[dot]com</a>.
+
+                </span><br><br>
+
+               <a class="menulink" target="_blank" href="https://scholar.google.com/citations?user=AMP0uJsAAAAJ&hl=en">Google Scholar </a><span class="tagsep">|</span>
+                 <a class="menulink" target="_blank" href="https://www.researchgate.net/profile/Kishalay-Das">Research Gate </a><span class="tagsep">|</span>
+               <a class="menulink" target="_blank" href="https://dblp.org/pid/258/3218.html">DBLP </a><span class="tagsep">|</span>
+               <a class="menulink" target="_blank" href="https://www.linkedin.com/in/kishalay-das-kd-309850143/">LinkedIn </a><span class="tagsep">|</span>
+               <a class="menulink" target="_blank" href="https://github.com/kdmsit">Github </a><span class="tagsep">|</span>
+               <a class="menulink" target="_blank" href="https://sharingmyexperiencesite.wordpress.com/">Blog </a><span class="tagsep">|</span>
+               <a class="menulink" target="_blank" href="assets/pdf/Kishalay_Das_CV.pdf">CV </a>|</span>
+                 <a class="menulink" target="_blank" href="https://youtube.com/user/kishalaydas">Youtube</a>
+            </article>
 
 # Highlights
 2025
