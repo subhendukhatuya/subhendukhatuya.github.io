@@ -5,7 +5,7 @@ title: Publications
 #author_profile: true
 ---
 
-1.  Program of Thoughts for Financial Reasoning: Leveraging Dynamic In-Context Examples and Generative Retrieval - **Subhendu Khatuya**, S Naidu, P Goyal, N Ganguly, In Proceedings of Empirical Methods in Natural Language Processing  (**EMNLP**), Suzhou, China, Nov 4-Nov 9, 2025 (Accepted at Main conference) **[Paper](https://aclanthology.org/2025.emnlp-main.1577.pdf)**   **[Code](https://github.com/subhendukhatuya/FINDER_POT_Financial_Numeric_Reasoning)**
+1.  Program of Thoughts for Financial Reasoning: Leveraging Dynamic In-Context Examples and Generative Retrieval - **Subhendu Khatuya**, S Naidu, P Goyal, N Ganguly, In Proceedings of Empirical Methods in Natural Language Processing  (**EMNLP**), Suzhou, China, Nov 4-Nov 9, 2025 (Accepted at Main conference) **[[Paper]](https://aclanthology.org/2025.emnlp-main.1577.pdf)**   **[Code](https://github.com/subhendukhatuya/FINDER_POT_Financial_Numeric_Reasoning)**
   
 2.  Label-semantics Aware Generative Approach for Domain-Agnostic Multilabel Classification - **Subhendu Khatuya**, S Naidu, S Ghosh, P Goyal, N Ganguly, In Proceedings of Association for Computational Linguistics (**ACL**), Vienna, Austria, July 27-Aug 1, 2025 (Accepted in Findings)
 
