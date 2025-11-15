@@ -7,15 +7,15 @@ title: Publications
 
 1.  Program of Thoughts for Financial Reasoning: Leveraging Dynamic In-Context Examples and Generative Retrieval - **Subhendu Khatuya**, S Naidu, P Goyal, N Ganguly, In Proceedings of Empirical Methods in Natural Language Processing  (**EMNLP**), Suzhou, China, Nov 4-Nov 9, 2025 (Accepted at Main conference) **[[Paper]](https://aclanthology.org/2025.emnlp-main.1577.pdf)**   **[[Code]](https://github.com/subhendukhatuya/FINDER_POT_Financial_Numeric_Reasoning)**
   
-2.  Label-semantics Aware Generative Approach for Domain-Agnostic Multilabel Classification - **Subhendu Khatuya**, S Naidu, S Ghosh, P Goyal, N Ganguly, In Proceedings of Association for Computational Linguistics (**ACL**), Vienna, Austria, July 27-Aug 1, 2025 (Accepted in Findings) **[[Paper]](https://aclanthology.org/2025.findings-acl.1145.pdf)**  **[[Code]](https://github.com/subhendukhatuya/Gen_ Multilabel_Classification.git)**
+2.  Label-semantics Aware Generative Approach for Domain-Agnostic Multilabel Classification - **Subhendu Khatuya**, S Naidu, S Ghosh, P Goyal, N Ganguly, In Proceedings of Association for Computational Linguistics (**ACL**), Vienna, Austria, July 27-Aug 1, 2025 (Accepted in Findings) **[[Paper]](https://aclanthology.org/2025.findings-acl.1145.pdf)**  **[[Code]](https://github.com/subhendukhatuya/Gen_Multilabel_Classification.git)**
 
 3. ExPERT: Modeling Human Behavior under External Stimuli Aware Personalized MTPP-  **Subhendu Khatuya**, R Vij, P Koley, S Datta, N Ganguly, In Proceedings of AAAI Conference on Artificial Intelligence (**AAAI**), Philadelphia, Feb 25-Mar 4, 2025 (Accepted at Main Technical Track)  **[[Paper]](https://ojs.aaai.org/index.php/AAAI/article/download/33960/36115)**  
   
 4. Parameter-Efficient Instruction Tuning of Large Language Models For Extreme Financial Numeral Labelling - **Subhendu Khatuya**, R Mukherjee, A Ghosh, M Hegde, K Dasgupta, N Ganguly, S Ghosh, P Goyal, In Proceedings of
-North American Chapter of the Association for Computational Linguistics (**NAACL**), Mexico City, Mexico, June 16-21, 2024 (Accepted at Main conference) **[[Paper]]( https://aclanthology.org/2024.naacl-long.410/)**   **[[Code]](https://github. com/subhendukhatuya/FLAN-FinXC.git)**
+North American Chapter of the Association for Computational Linguistics (**NAACL**), Mexico City, Mexico, June 16-21, 2024 (Accepted at Main conference) **[[Paper]]( https://aclanthology.org/2024.naacl-long.410/)**   **[[Code]](https://github.com/subhendukhatuya/FLAN-FinXC.git)**
 
 
-5. Instruction-Guided Bullet Point Summarization of Long Financial Earnings Call Transcripts - **Subhendu Khatuya**, K Sinha, N Ganguly, S Ghosh, P Goyal, SIGIR Conference on Research and Development in Information Retrieval (**SIGIR**), Washington D.C., USA, July 14-18, 2024 (short)  **[[Paper]]( https://dl.acm.org/doi/pdf/10.1145/3626772.3657948)**   **[[Code]](https://github.com/ subhendukhatuya/FLAN-FinBPS.git)**
+5. Instruction-Guided Bullet Point Summarization of Long Financial Earnings Call Transcripts - **Subhendu Khatuya**, K Sinha, N Ganguly, S Ghosh, P Goyal, SIGIR Conference on Research and Development in Information Retrieval (**SIGIR**), Washington D.C., USA, July 14-18, 2024 (short)  **[[Paper]]( https://dl.acm.org/doi/pdf/10.1145/3626772.3657948)**   **[[Code]](https://github.com/subhendukhatuya/FLAN-FinBPS.git)**
 
 6. Parameter Efficient Instruction Tuning of LLMs for Financial Applications - **Subhendu Khatuya**, International Joint Conference on Artificial Intelligence (IJCAI), Jeju, South Korea, Aug 3-9, 2024
 (Extended Abstract at Doctoral Consortium) **[[Paper]]( https://www.ijcai.org/proceedings/2024/0962.pdf)**
