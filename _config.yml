@@ -1,12 +1,11 @@
-name: Subhendu Khatuya's blog
+name: 
 title: Subhendu Khatuya
-url: https://subhendukhatuya.github.io/
+url: 
 baseurl: ""
 twitter_username:
-github_username:  subhendukhatuya
-linkedin_username: subhendu-khatuya-543140a8
-description: Machine learning, Deep learning, NLP, Computer Vision and other areas of data science.
-# email: sanakarshan7@gmail.com
+github_username:  
+linkedin_username: 
+description: 
 permalink: /blog/:year/:month/:day/:title
 theme: minima
 
