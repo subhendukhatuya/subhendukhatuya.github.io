@@ -18,6 +18,13 @@ Feel free to connect me at <a href="subha.cse143@gmail.com" target="_blank">subh
   
 
 # Highlights
+
+2026
+```
+    [June] : Selected to participate in Heidelberg Laureate Forum , Heidelberg, Germany, Sep 12-  Sep 19
+ 
+```
+
 2025
 ```
     [Oct] : Paper accepted at EMNLP-2025, Suzhou, China, Nov 4- Nov 9
