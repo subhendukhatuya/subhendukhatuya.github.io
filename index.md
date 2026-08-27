@@ -2,7 +2,7 @@
 layout: default
 title: Home
 ---
-I have joined as a Postdoctoral Researcher at the <a href="https://tu-dresden.de/">Technische Universität Dresden (TU Dresden)</a>, Germany, and I am associated with the <a href="https://scads.ai/">ScaDS.AI Dresden/Leipzig</a> research center. My current research focuses on Natural Language Processing, Knowledge Graph, Large Language Models (LLMs), and domain-specific applications of AI.
+I have joined as a Postdoctoral Researcher at the <a href="https://tu-dresden.de/">Technische Universität Dresden (TU Dresden)</a>, Germany, and I am associated with the <a href="https://scads.ai/">ScaDS.AI Dresden/Leipzig</a> research center. My current research focuses on Natural Language Processing, Reasoning, Knowledge Graph, Large Language Models (LLMs), and domain-specific applications of AI.
 
 I have completed my Ph.D. in the [<span style="color:blue"> Computer Science and Engineering</span>](http://cse.iitkgp.ac.in/) at [<span style="color:blue">Indian Institue of Technology, Kharagpur</span>](http://www.iitkgp.ac.in/), , where I was a Prime Minister's Research Fellow worked under the supervision of [<span style="color:blue">Dr. Pawan Goyal</span>](https://cse.iitkgp.ac.in/~pawang/) and [<span style="color:blue">Dr. Niloy Ganguly</span>](https://niloy-ganguly.github.io/). My current research interest includes NLP, AI, deep learning, LLMs, temporal point process.
 
