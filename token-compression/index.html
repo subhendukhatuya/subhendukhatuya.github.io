@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Batch-Budgeted Reasoning</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Ongoing work: predicting per-query reasoning budgets from a shared batch budget, then enforcing them with Budget Guidance.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a meeting brief. Narrow contents rail on wide screens, one reading column, figures break wider. */
+:root{
+  --paper:#F6F7F9; --sheet:#FFFFFF; --ink:#141B26; --ink-2:#4A5466; --ink-3:#7A8496;
+  --rule:#DCE0E7; --accent:#2F5BEA; --accent-soft:#E6ECFD;
+  --ok:#1C8A5A; --bad:#C8402F; --warn-bg:#FFF6E0; --warn-ink:#7A5200;
+  --g1:#2F5BEA; --g2:#B87808; --g3:#C2408A;
+  --f-display:"Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  --f-body:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  --s-1:.8125rem; --s0:1.0625rem; --s1:1.25rem; --s2:1.6rem; --s3:2.3rem; --s4:clamp(2.2rem,5vw,3.4rem);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0F141C; --sheet:#141A24; --ink:#E8ECF2; --ink-2:#B1B9C7; --ink-3:#808A9C;
+  --rule:#273041; --accent:#7D9BFF; --accent-soft:#1C2848;
+  --ok:#4CC08A; --bad:#F07A68; --warn-bg:#2B2410; --warn-ink:#F0C870;
+  --g1:#6F8CF5; --g2:#BC8020; --g3:#D2609E; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --paper:#0F141C; --sheet:#141A24; --ink:#E8ECF2; --ink-2:#B1B9C7; --ink-3:#808A9C;
+  --rule:#273041; --accent:#7D9BFF; --accent-soft:#1C2848;
+  --ok:#4CC08A; --bad:#F07A68; --warn-bg:#2B2410; --warn-ink:#F0C870;
+  --g1:#6F8CF5; --g2:#BC8020; --g3:#D2609E; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:var(--s0);line-height:1.6;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.15;margin:0}
+h2{font-size:var(--s3);font-weight:700;letter-spacing:-.01em}
+h3{font-size:var(--s1);font-weight:700}
+p{margin:0;max-width:66ch}
+.label{font-family:var(--f-mono);font-size:var(--s-1);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+/* top bar */
+.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.top a{color:var(--ink-2);text-decoration:none;font-family:var(--f-mono);font-size:var(--s-1)}
+.top a:hover{color:var(--accent)}
+.status{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--f-mono);font-size:var(--s-1);color:var(--warn-ink);background:var(--warn-bg);padding:.25rem .6rem;border-radius:999px}
+.status i{width:.5rem;height:.5rem;border-radius:50%;background:currentColor;display:block}
+
+/* hero */
+.hero{display:grid;gap:1.4rem;padding-block:3rem 2.5rem}
+.hero h1{font-size:var(--s4);font-weight:700;letter-spacing:-.025em;max-width:18ch}
+.hero .lede{font-size:var(--s1);color:var(--ink-2);max-width:60ch}
+.budget{margin-top:.6rem;background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:1.2rem 1.2rem 1rem;display:grid;gap:.8rem}
+.budget-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem;font-family:var(--f-mono);font-size:var(--s-1);color:var(--ink-2)}
+.bar{display:flex;gap:2px;height:44px}
+.seg{flex:var(--w);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:.75rem;color:#fff;min-width:0;overflow:hidden;white-space:nowrap;transition:flex .9s cubic-bezier(.2,.7,.2,1)}
+.seg.e{background:var(--g1)} .seg.m{background:var(--g2)} .seg.h{background:var(--g3)}
+.bar.uniform .seg{flex:1}
+.budget-foot{display:flex;flex-wrap:wrap;gap:.5rem 1.2rem;align-items:center;font-size:var(--s-1);color:var(--ink-2)}
+.key{display:inline-flex;align-items:center;gap:.4rem;font-family:var(--f-mono)}
+.key b{width:.7rem;height:.7rem;border-radius:2px;display:block}
+.toggle{margin-left:auto;font-family:var(--f-mono);font-size:var(--s-1);background:transparent;color:var(--accent);border:1px solid var(--accent);border-radius:6px;padding:.3rem .7rem;cursor:pointer}
+.toggle:hover{background:var(--accent-soft)}
+
+/* body layout */
+.layout{display:grid;grid-template-columns:200px minmax(0,1fr);gap:3rem;align-items:start}
+.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 1.5rem);display:grid;gap:.15rem;padding-top:.4rem}
+.toc a{font-family:var(--f-mono);font-size:var(--s-1);color:var(--ink-3);text-decoration:none;padding:.3rem 0 .3rem .7rem;border-left:2px solid var(--rule)}
+.toc a:hover{color:var(--ink);border-left-color:var(--accent)}
+main{display:grid;gap:4.5rem;min-width:0}
+section{display:grid;gap:1.2rem;min-width:0;scroll-margin-top:1.5rem}
+.sec-head{display:grid;gap:.4rem}
+
+/* problem */
+.qa{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem}
+.qa div{border-top:2px solid var(--ink);padding-top:.7rem;display:grid;gap:.4rem}
+.qa h3{font-size:var(--s0)}
+.qa p{color:var(--ink-2);font-size:.98rem}
+
+/* lineage */
+.lineage{display:grid;grid-template-columns:1fr auto 1fr;gap:1rem;align-items:stretch}
+.paper{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:1.1rem 1.2rem;display:grid;gap:.6rem;align-content:start;min-width:0}
+.paper .who{font-size:var(--s-1);color:var(--ink-3);font-family:var(--f-mono)}
+.paper ul{margin:0;padding-left:1.1rem;display:grid;gap:.3rem;color:var(--ink-2);font-size:.98rem}
+.paper .take{font-size:.95rem;border-top:1px dashed var(--rule);padding-top:.6rem}
+.plus{display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-size:2rem;color:var(--ink-3)}
+.ours{grid-column:1/-1;background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;padding:1rem 1.2rem;display:grid;gap:.4rem}
+
+/* pipeline */
+.pipe{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.6rem;counter-reset:st}
+.st{background:var(--sheet);border:1px solid var(--rule);border-radius:8px;padding:.9rem;display:grid;gap:.45rem;align-content:start;position:relative}
+.st .n{font-family:var(--f-mono);font-size:.75rem;color:var(--accent)}
+.st h3{font-size:1rem}
+.st p{font-size:.9rem;color:var(--ink-2)}
+.st code{font-family:var(--f-mono);font-size:.8rem;background:var(--paper);padding:.05rem .3rem;border-radius:3px}
+.eqs{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}
+.eq{border-left:2px solid var(--accent);padding:.2rem 0 .2rem 1rem;display:grid;gap:.35rem}
+.eq .f{font-family:var(--f-mono);font-size:.95rem;overflow-x:auto;white-space:nowrap}
+.eq p{font-size:.92rem;color:var(--ink-2)}
+figure{margin:0;display:grid;gap:.6rem}
+figcaption{font-size:var(--s-1);color:var(--ink-3);max-width:80ch}
+.figframe{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:.6rem;overflow:hidden}
+.figframe img{display:block;width:100%;height:auto;border-radius:4px;background:#fff}
+details.fig summary{cursor:pointer;font-family:var(--f-mono);font-size:var(--s-1);color:var(--accent);list-style:none}
+details.fig summary::-webkit-details-marker{display:none}
+details.fig summary::before{content:"+ "}
+details.fig[open] summary::before{content:"– "}
+details.fig[open] summary{margin-bottom:.8rem}
+
+/* findings */
+.findings{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem}
+.find{display:grid;gap:.35rem;align-content:start}
+.find .k{font-family:var(--f-mono);font-size:var(--s-1);color:var(--accent)}
+.find p{font-size:.96rem;color:var(--ink-2)}
+.find strong{color:var(--ink)}
+.tabs{display:flex;flex-wrap:wrap;gap:.4rem}
+.tabs button{font-family:var(--f-mono);font-size:var(--s-1);background:var(--sheet);color:var(--ink-2);border:1px solid var(--rule);border-radius:6px;padding:.4rem .75rem;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.grid4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem}
+.note{font-size:var(--s-1);color:var(--ink-3)}
+
+/* table */
+.tablewrap{overflow-x:auto;background:var(--sheet);border:1px solid var(--rule);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:.9rem}
+th,td{padding:.5rem .8rem;text-align:right;white-space:nowrap}
+th{font-family:var(--f-mono);font-weight:600;font-size:.75rem;letter-spacing:.04em;color:var(--ink-3);border-bottom:1px solid var(--rule);text-transform:uppercase}
+td{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left}
+tr.grp td{font-family:var(--f-body);font-style:italic;color:var(--ink-3);text-align:left;padding-top:.9rem;border-top:1px solid var(--rule)}
+td .sw{display:inline-block;width:.6rem;height:.6rem;border-radius:2px;margin-right:.45rem;vertical-align:baseline}
+.ebar{display:inline-flex;align-items:center;gap:.5rem;justify-content:flex-end;width:100%}
+.ebar span.b{height:8px;border-radius:0 4px 4px 0;background:var(--ink-3);opacity:.45;display:block}
+.up{color:var(--ok)} .down{color:var(--bad)}
+tr.hl td{background:var(--accent-soft)}
+
+/* scatter */
+.chart{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:1rem;position:relative;overflow-x:auto}
+.chart svg{display:block;width:100%;min-width:520px;height:auto}
+.chart text{font-family:var(--f-mono);font-size:11px;fill:var(--ink-2)}
+.chart .ax{stroke:var(--rule)} .chart .grid{stroke:var(--rule);stroke-dasharray:2 4}
+.chart .pt{stroke:var(--sheet);stroke-width:2;cursor:pointer}
+.chart .lead{stroke:var(--ink-3);stroke-width:1}
+.chart .zone{fill:var(--accent-soft)}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--paper);font-family:var(--f-mono);font-size:.75rem;padding:.45rem .6rem;border-radius:6px;line-height:1.45;white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:.4rem 1.2rem;font-size:var(--s-1);color:var(--ink-2);margin-bottom:.4rem}
+
+/* next */
+.plan{display:grid;gap:0;border-top:1px solid var(--rule)}
+.plan div{display:grid;grid-template-columns:7.5rem minmax(0,1fr) auto;gap:1rem;padding:.8rem 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.plan .w{font-family:var(--f-mono);font-size:var(--s-1);color:var(--ink-3)}
+.plan p{font-size:.98rem}
+.pill{font-family:var(--f-mono);font-size:.7rem;padding:.15rem .5rem;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.pill.done{color:var(--ok)} .pill.run{color:var(--warn-ink);background:var(--warn-bg);border-color:transparent} .pill.todo{color:var(--ink-3)}
+.questions{display:grid;gap:.6rem;padding-left:1.2rem;margin:0}
+.questions li{max-width:70ch}
+.refs{display:grid;gap:.6rem;font-size:.92rem;color:var(--ink-2);padding-left:1.2rem;margin:0}
+footer{margin-top:4rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-family:var(--f-mono);font-size:var(--s-1);color:var(--ink-3);display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem}
+
+@media (max-width:900px){
+  .layout{grid-template-columns:minmax(0,1fr)} .toc{display:none}
+  .pipe{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+}
+@media (max-width:640px){
+  .lineage{grid-template-columns:minmax(0,1fr)} .plus{font-size:1.5rem}
+  .grid4{grid-template-columns:minmax(0,1fr)}
+  .plan div{grid-template-columns:minmax(0,1fr) auto} .plan .w{grid-column:1/-1}
+  .seg{font-size:0}
+}
+@media (prefers-reduced-motion:reduce){.seg{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a href="../">← Subhendu Khatuya</a>
+    <span class="status"><i></i>Work in progress · project meeting, Oct 2026</span>
+  </header>
+
+  <section class="hero" aria-labelledby="t">
+    <span class="label">Token-efficient reasoning · ongoing work</span>
+    <h1 id="t">Batch-Budgeted Reasoning</h1>
+    <p class="lede">Give a batch of queries one shared token budget <span class="mono">B</span>. Predict how much thinking each query needs from its metadata and the model's hidden states, split <span class="mono">B</span> accordingly, then use Budget Guidance so each answer actually finishes inside its share.</p>
+
+    <div class="budget" aria-label="Example allocation of a shared budget">
+      <div class="budget-head"><span>Total budget B = 8,000 reasoning tokens · 6 queries</span><span id="mode-label">Predicted allocation</span></div>
+      <div class="bar" id="bar">
+        <div class="seg e" style="--w:500">b₁ 500</div>
+        <div class="seg e" style="--w:300">b₂ 300</div>
+        <div class="seg m" style="--w:1500">b₃ 1,500</div>
+        <div class="seg h" style="--w:2900">b₄ 2,900</div>
+        <div class="seg m" style="--w:800">b₅ 800</div>
+        <div class="seg h" style="--w:2000">b₆ 2,000</div>
+      </div>
+      <div class="budget-foot">
+        <span class="key"><b style="background:var(--g1)"></b>easy</span>
+        <span class="key"><b style="background:var(--g2)"></b>medium</span>
+        <span class="key"><b style="background:var(--g3)"></b>hard</span>
+        <span>Illustrative numbers. Σ bᵢ = B in both views.</span>
+        <button class="toggle" id="toggle" type="button" aria-pressed="false">Show uniform split</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="layout">
+    <nav class="toc" aria-label="Sections">
+      <a href="#problem">Problem</a>
+      <a href="#lineage">Where the idea comes from</a>
+      <a href="#method">Proposed method</a>
+      <a href="#length">Analysis 1 · length vs difficulty</a>
+      <a href="#energy">Analysis 2 · tokens & energy</a>
+      <a href="#next">Status & next steps</a>
+      <a href="#discuss">For discussion</a>
+      <a href="#refs">References</a>
+    </nav>
+
+    <main>
+      <section id="problem">
+        <div class="sec-head"><span class="label">Problem</span><h2>One fixed budget per query wastes tokens</h2></div>
+        <p>Reasoning models think for thousands of tokens on every query. A fixed per-query cap over-spends on easy questions and cuts hard ones short. When a batch shares a compute or energy budget, the real question is how to divide it.</p>
+        <div class="qa">
+          <div><h3>Allocate</h3><p>Given a total budget <span class="mono">B</span> for a batch of <span class="mono">N</span> queries, how many reasoning tokens should each query get?</p></div>
+          <div><h3>Predict</h3><p>Can we estimate needed length before generating, from problem metadata and the model's own hidden states?</p></div>
+          <div><h3>Obey</h3><p>Once a query has budget <span class="mono">bᵢ</span>, can the model finish its reasoning within it, without being cut off mid-thought?</p></div>
+        </div>
+      </section>
+
+      <section id="lineage">
+        <div class="sec-head"><span class="label">Where the idea comes from</span><h2>Two papers, one per stage</h2></div>
+        <div class="lineage">
+          <article class="paper">
+            <span class="who">Brown, Muppidi, Shahout · arXiv 2602.01237 (2026)</span>
+            <h3><a href="https://arxiv.org/abs/2602.01237">Predictive Scheduling</a></h3>
+            <ul>
+              <li>Pre-run predictors: an MLP on intermediate hidden states, or a LoRA classifier on question text</li>
+              <li>Greedy batch allocator splits a fixed total token budget across queries</li>
+              <li>GSM8K: up to 7.9 pp accuracy over uniform budgets at equal cost; closes &gt;50% of the gap to an oracle</li>
+              <li>Middle layers (12–17) carry the strongest length signal</li>
+            </ul>
+            <p class="take"><strong>We take:</strong> batch-level allocation from predicted per-query need.</p>
+          </article>
+          <div class="plus" aria-hidden="true">+</div>
+          <article class="paper">
+            <span class="who">Li, Zhao, Zhang, Gan · arXiv 2506.13752 (2025)</span>
+            <h3><a href="https://arxiv.org/abs/2506.13752">Budget Guidance</a></h3>
+            <ul>
+              <li>Lightweight predictor models a Gamma distribution over the <em>remaining</em> thinking length at each step</li>
+              <li>Soft, token-level steering toward a target budget; no LLM fine-tuning</li>
+              <li>Up to 26% accuracy gain on MATH-500 under tight budgets; competitive accuracy with 63% of full thinking tokens</li>
+              <li>Avoids the abrupt cut-off of budget forcing</li>
+            </ul>
+            <p class="take"><strong>We take:</strong> reliable per-query enforcement of an assigned budget.</p>
+          </article>
+          <div class="ours">
+            <span class="label" style="color:var(--accent)">Our combination</span>
+            <p>Predictive Scheduling decides <em>how much</em> each query gets; Budget Guidance makes the model <em>stay within it</em>. We extend the scheduler's input from hidden states alone to <strong>problem metadata + hidden states</strong>.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="method">
+        <div class="sec-head"><span class="label">Proposed method</span><h2>Pipeline</h2></div>
+        <div class="pipe">
+          <div class="st"><span class="n">Step 1</span><h3>Input batch</h3><p>Queries <code>q₁ … q_N</code> and a shared budget <code>B</code>.</p></div>
+          <div class="st"><span class="n">Step 2</span><h3>Features</h3><p>Metadata <code>mᵢ</code> (difficulty estimate, length, readability, numbers, domain) and hidden state <code>hᵢ</code> from one forward pass.</p></div>
+          <div class="st"><span class="n">Step 3</span><h3>Allocate</h3><p>Scheduler <code>f_θ(xᵢ)</code> predicts need <code>âᵢ</code>; normalise so <code>Σ bᵢ = B</code>.</p></div>
+          <div class="st"><span class="n">Step 4</span><h3>Guided generation</h3><p>Budget Guidance steers query <code>i</code> to finish thinking within <code>bᵢ</code>.</p></div>
+          <div class="st"><span class="n">Step 5</span><h3>Outputs</h3><p>Answers with reasoning length <code>≤ bᵢ</code>; total spend <code>≤ B</code>.</p></div>
+        </div>
+        <div class="eqs">
+          <div class="eq"><span class="label">Features</span><div class="f">xᵢ = [ mᵢ ‖ hᵢ ]</div><p>Concatenate metadata and a pooled mid-layer hidden state.</p></div>
+          <div class="eq"><span class="label">Scheduler</span><div class="f">âᵢ = f_θ(xᵢ)</div><p>Regression on needed length, or classification over discrete budget bins.</p></div>
+          <div class="eq"><span class="label">Constraint</span><div class="f">bᵢ = B · âᵢ / Σⱼ âⱼ ,  Σ bᵢ = B</div><p>Proportional split shown; greedy marginal-gain allocation is the alternative.</p></div>
+        </div>
+        <p><strong>Training the scheduler.</strong> Run each training query at several budgets, record the smallest budget that reaches the correct answer as its oracle label, extract <span class="mono">mᵢ</span> and <span class="mono">hᵢ</span>, and fit <span class="mono">f_θ</span> to maximise batch accuracy under the budget constraint.</p>
+        <details class="fig">
+          <summary>Show full method overview figure</summary>
+          <figure>
+            <div class="figframe"><img src="assets/method-overview.png" alt="Method overview: input batch, feature extraction from metadata and hidden states, token allocation by a modified predictive scheduler, guided generation with BudgetGuidance, and outputs within budget" loading="lazy" width="1024" height="1536"></div>
+            <figcaption>Method overview poster: motivation, pipeline, scheduler training, and an example allocation of a fixed budget.</figcaption>
+          </figure>
+        </details>
+      </section>
+
+      <section id="length">
+        <div class="sec-head"><span class="label">Analysis 1 · ongoing</span><h2>Reasoning length grows with difficulty, and wrong answers run long</h2></div>
+        <p>Total tokens per response against problem difficulty (levels 1–5) for four reasoning models. Green points are correct answers, red are incorrect; diamonds mark the means.</p>
+        <div class="findings">
+          <div class="find"><span class="k">Finding 1</span><p><strong>Need scales with difficulty.</strong> Mean length of correct answers rises from about 2k tokens at level 1 to about 5–7k at level 5 in every model. A per-query budget has something real to predict.</p></div>
+          <div class="find"><span class="k">Finding 2</span><p><strong>Incorrect answers are 2–6× longer.</strong> For R1-Distill-1.5B at level 3, wrong answers average about 18k tokens against about 3k for right ones. Many of these tokens buy nothing.</p></div>
+          <div class="find"><span class="k">Finding 3</span><p><strong>Difficulty alone is not enough.</strong> Spread within a level is wide (≈1k to 30k+), so a level label is a weak predictor. This motivates adding hidden-state features.</p></div>
+          <div class="find"><span class="k">Finding 4</span><p><strong>Scale changes the error profile.</strong> Qwen3-0.6B fails often at levels 4–5; Qwen3-4B fails rarely. The same budget means different things for different models.</p></div>
+        </div>
+        <p class="note">Values above are read off the plots and are approximate.</p>
+        <div class="tabs" role="tablist" aria-label="Plot layout">
+          <button type="button" role="tab" aria-selected="true" data-view="all">All four</button>
+          <button type="button" role="tab" aria-selected="false" data-view="0">Qwen3-0.6B</button>
+          <button type="button" role="tab" aria-selected="false" data-view="1">R1-Distill-Qwen-1.5B</button>
+          <button type="button" role="tab" aria-selected="false" data-view="2">Qwen3-4B</button>
+          <button type="button" role="tab" aria-selected="false" data-view="3">R1-Distill-Qwen-7B</button>
+        </div>
+        <div class="grid4" id="plots">
+          <figure><div class="figframe"><img src="assets/qwen3-0.6b.jpeg" alt="Token count vs difficulty level for Qwen3-0.6B" loading="lazy" width="1500" height="900"></div><figcaption>Qwen3-0.6B</figcaption></figure>
+          <figure><div class="figframe"><img src="assets/r1-distill-qwen-1.5b.jpeg" alt="Token count vs difficulty level for DeepSeek-R1-Distill-Qwen-1.5B" loading="lazy" width="1500" height="900"></div><figcaption>DeepSeek-R1-Distill-Qwen-1.5B</figcaption></figure>
+          <figure><div class="figframe"><img src="assets/qwen3-4b.jpeg" alt="Token count vs difficulty level for Qwen3-4B" loading="lazy" width="1500" height="900"></div><figcaption>Qwen3-4B</figcaption></figure>
+          <figure><div class="figframe"><img src="assets/r1-distill-qwen-7b.jpeg" alt="Token count vs difficulty level for DeepSeek-R1-Distill-Qwen-7B" loading="lazy" width="1500" height="900"></div><figcaption>DeepSeek-R1-Distill-Qwen-7B</figcaption></figure>
+        </div>
+      </section>
+
+      <section id="energy">
+        <div class="sec-head"><span class="label">Analysis 2 · ongoing</span><h2>Tokens, accuracy and energy on DeepSeek-R1-Distill-Qwen-1.5B</h2></div>
+        <p>Ten configurations compared against the unconstrained base model. The adaptive budget (B-Adpt) is the only setting that cuts energy by more than 10% while staying within half a point of base accuracy.</p>
+
+        <div class="chart" id="chart">
+          <div class="legend">
+            <span class="key"><b style="background:var(--g1)"></b>Prompting baselines</span>
+            <span class="key"><b style="background:var(--g2);border-radius:0;transform:rotate(45deg) scale(.8)"></b>Budget variants</span>
+            <span class="key"><b style="background:var(--g3);border-radius:50%"></b>Other compression methods</span>
+          </div>
+          <svg id="scatter" viewBox="0 0 760 380" role="img" aria-label="Accuracy versus energy for ten configurations. Base 82.4 at 98.3; B-Adpt 82.1 at 86.5; Eff 79.2 at 70.1; SB 60.2 at 11.8; TS 35.0 at 16.4; ICL 32.0 at 97.2."></svg>
+          <div class="tip" id="tip" hidden></div>
+        </div>
+
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Method</th><th>T<sub>think</sub></th><th>T<sub>out</sub></th><th>Δ T<sub>out</sub></th><th>T<sup>+</sup><sub>out</sub></th><th>Acc.</th><th>Δ Acc.</th><th>Energy</th><th style="min-width:150px">Δ Energy vs base</th></tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <p class="note">T<sub>think</sub>: thinking tokens. T<sub>out</sub>: total output tokens. T<sup>+</sup><sub>out</sub>: output tokens as reported in the source table. Energy in the units of our measurement run; Δ columns computed against Base. Source table: <a href="assets/energy-table.png">energy-table.png</a>.</p>
+
+        <div class="findings">
+          <div class="find"><span class="k">Takeaway</span><p><strong>Fixed caps barely bite.</strong> B-1K to B-3K keep accuracy (82.5–83.1) but reduce output by only 1–4% and energy by 0–7%.</p></div>
+          <div class="find"><span class="k">Takeaway</span><p><strong>Adaptive is the sweet spot so far.</strong> B-Adpt: −13% output tokens, −12% energy, −0.3 pp accuracy.</p></div>
+          <div class="find"><span class="k">Takeaway</span><p><strong>Aggressive compression breaks accuracy.</strong> SB saves 88% energy but loses 22 pp; ICL and TS fall to 32–35%.</p></div>
+        </div>
+      </section>
+
+      <section id="next">
+        <div class="sec-head"><span class="label">Status & next steps</span><h2>Where the work stands</h2></div>
+        <div class="plan">
+          <div><span class="w">Done</span><p>Length-vs-difficulty analysis on four models (Qwen3-0.6B / 4B, R1-Distill-Qwen-1.5B / 7B)</p><span class="pill done">done</span></div>
+          <div><span class="w">Done</span><p>Token and energy baselines on R1-Distill-Qwen-1.5B, including fixed and adaptive budgets</p><span class="pill done">done</span></div>
+          <div><span class="w">In progress</span><p>Oracle budget labels: minimal budget that still yields the correct answer per query</p><span class="pill run">running</span></div>
+          <div><span class="w">In progress</span><p>Feature extraction: metadata vector <span class="mono">mᵢ</span> + mid-layer hidden state <span class="mono">hᵢ</span></p><span class="pill run">running</span></div>
+          <div><span class="w">Next</span><p>Train scheduler <span class="mono">f_θ</span>; compare hidden-only, metadata-only, and combined features</p><span class="pill todo">planned</span></div>
+          <div><span class="w">Next</span><p>End-to-end batch runs: uniform B vs Predictive Scheduling vs Budget Guidance alone vs ours, at matched total budgets</p><span class="pill todo">planned</span></div>
+          <div><span class="w">Next</span><p>Report accuracy, tokens and energy per query; extend from math to coding and QA</p><span class="pill todo">planned</span></div>
+        </div>
+      </section>
+
+      <section id="discuss">
+        <div class="sec-head"><span class="label">For discussion</span><h2>Open questions for the meeting</h2></div>
+        <ol class="questions">
+          <li>Allocation rule: proportional split, or greedy marginal-accuracy allocation as in Predictive Scheduling?</li>
+          <li>Which layer, and which pooling, for <span class="mono">hᵢ</span>? Predictive Scheduling points to layers 12–17; this should be checked per model.</li>
+          <li>Incorrect answers are the longest. Should the scheduler also predict "likely to fail" and give those queries a small budget?</li>
+          <li>Which baselines are mandatory for a submission, and which benchmarks beyond math?</li>
+          <li>How to report energy: per query, per correct answer, or per batch at matched accuracy?</li>
+        </ol>
+      </section>
+
+      <section id="refs">
+        <div class="sec-head"><span class="label">References</span></div>
+        <ol class="refs">
+          <li>K. Brown, A. Muppidi, R. Shahout. <em>Predictive Scheduling for Efficient Inference-Time Reasoning in Large Language Models.</em> arXiv:2602.01237, 2026. <a href="https://arxiv.org/abs/2602.01237">arXiv</a> · <a href="https://aneeshers.github.io/predictive-scheduling/">project page</a></li>
+          <li>J. Li, W. Zhao, Y. Zhang, C. Gan. <em>Steering LLM Thinking with Budget Guidance.</em> arXiv:2506.13752, 2025. <a href="https://arxiv.org/abs/2506.13752">arXiv</a> · <a href="https://github.com/UMass-Embodied-AGI/BudgetGuidance">code</a></li>
+        </ol>
+      </section>
+    </main>
+  </div>
+
+  <footer><span>Subhendu Khatuya · ongoing research, results are preliminary</span><span>Last updated 14 Oct 2026</span></footer>
+</div>
+
+<script>
+(function(){
+  /* hero toggle */
+  var bar=document.getElementById('bar'),btn=document.getElementById('toggle'),lab=document.getElementById('mode-label');
+  var segs=[].slice.call(bar.children),orig=segs.map(function(s){return s.textContent});
+  btn.addEventListener('click',function(){
+    var u=!bar.classList.contains('uniform');
+    bar.classList.toggle('uniform',u);
+    btn.setAttribute('aria-pressed',u);
+    btn.textContent=u?'Show predicted split':'Show uniform split';
+    lab.textContent=u?'Uniform allocation':'Predicted allocation';
+    segs.forEach(function(s,i){s.textContent=u?('b'+'₁₂₃₄₅₆'[i]+' 1,333'):orig[i]});
+  });
+
+  /* plot tabs */
+  var tabs=[].slice.call(document.querySelectorAll('.tabs button')),figs=[].slice.call(document.querySelectorAll('#plots figure')),grid=document.getElementById('plots');
+  tabs.forEach(function(t){t.addEventListener('click',function(){
+    tabs.forEach(function(x){x.setAttribute('aria-selected',x===t)});
+    var v=t.dataset.view;
+    figs.forEach(function(f,i){f.hidden=!(v==='all'||+v===i)});
+    grid.style.gridTemplateColumns=v==='all'?'':'minmax(0,1fr)';
+  })});
+
+  /* data */
+  var D=[
+    {g:'Prompting baselines',m:'Base',th:4475,out:4892,op:3354,acc:82.4,en:98.3,c:'g1',s:'c'},
+    {m:'Brief',th:3687,out:4096,op:2879,acc:81.4,en:79.9,c:'g1',s:'c'},
+    {m:'Eff',th:2948,out:3344,op:2333,acc:79.2,en:70.1,c:'g1',s:'c'},
+    {g:'Budget variants',m:'B-1K',th:4436,out:4837,op:3369,acc:82.8,en:98.1,c:'g2',s:'d'},
+    {m:'B-2K',th:4357,out:4757,op:3297,acc:82.5,en:91.2,c:'g2',s:'d'},
+    {m:'B-3K',th:4322,out:4720,op:3334,acc:83.1,en:97.4,c:'g2',s:'d'},
+    {m:'B-Adpt',th:3874,out:4273,op:2942,acc:82.1,en:86.5,c:'g2',s:'d',hl:1},
+    {g:'Other compression methods',m:'ICL',th:4295,out:4731,op:2185,acc:32.0,en:97.2,c:'g3',s:'o'},
+    {m:'SB',th:224,out:513,op:328,acc:60.2,en:11.8,c:'g3',s:'o'},
+    {m:'TS',th:null,out:3002,op:null,acc:35.0,en:16.4,c:'g3',s:'o'}
+  ];
+  var base=D[0],f=function(n){return n==null?'–':n.toLocaleString('en-US')};
+  var pct=function(v,b){return Math.round((v-b)/b*100)};
+  var tb=document.getElementById('tbody'),h='';
+  D.forEach(function(d){
+    if(d.g) h+='<tr class="grp"><td colspan="9">'+d.g+'</td></tr>';
+    var dO=pct(d.out,base.out),dA=(d.acc-base.acc),dE=pct(d.en,base.en);
+    var w=Math.round(Math.abs(dE)/100*110);
+    h+='<tr'+(d.hl?' class="hl"':'')+'><td><span class="sw" style="background:var(--'+d.c+')"></span>'+d.m+'</td><td>'+f(d.th)+'</td><td>'+f(d.out)+'</td><td>'+(d===base?'–':dO+'%')+'</td><td>'+f(d.op)+'</td><td>'+d.acc.toFixed(1)+'</td><td class="'+(d===base?'':dA>=0?'up':'down')+'">'+(d===base?'–':(dA>=0?'+':'−')+Math.abs(dA).toFixed(1))+'</td><td>'+d.en.toFixed(1)+'</td><td><span class="ebar"><span>'+(d===base?'–':dE+'%')+'</span><span class="b" style="width:'+w+'px"></span></span></td></tr>';
+  });
+  tb.innerHTML=h;
+
+  /* scatter: x energy 0..105, y accuracy 25..90 */
+  var svg=document.getElementById('scatter'),NS='http://www.w3.org/2000/svg';
+  var L=56,R=700,T=16,Bt=330,x=function(v){return L+v/105*(R-L)},y=function(v){return Bt-(v-25)/65*(Bt-T)};
+  function el(n,a,p){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);(p||svg).appendChild(e);return e}
+  // target zone: within 1pp of base accuracy
+  el('rect',{class:'zone',x:L,y:y(83.4),width:R-L,height:y(81.4)-y(83.4)});
+  var zl=el('text',{x:L+6,y:y(83.4)-6});zl.textContent='within ±1 pp of base accuracy';
+  [30,40,50,60,70,80,90].forEach(function(v){el('line',{class:'grid',x1:L,x2:R,y1:y(v),y2:y(v)});var t=el('text',{x:L-8,y:y(v)+4,'text-anchor':'end'});t.textContent=v});
+  [0,20,40,60,80,100].forEach(function(v){var t=el('text',{x:x(v),y:Bt+18,'text-anchor':'middle'});t.textContent=v});
+  el('line',{class:'ax',x1:L,x2:R,y1:Bt,y2:Bt});
+  var xt=el('text',{x:(L+R)/2,y:Bt+40,'text-anchor':'middle'});xt.textContent='Energy (lower is better) →';
+  var yt=el('text',{x:14,y:(T+Bt)/2,'text-anchor':'middle',transform:'rotate(-90 14 '+((T+Bt)/2)+')'});yt.textContent='Accuracy (%)';
+  // label offsets [dx,dy,anchor]
+  var off={'Base':[16,4,'start'],'B-1K':[-30,-36,'end'],'B-3K':[14,-38,'start'],'B-2K':[6,34,'start'],'B-Adpt':[-4,36,'end'],'Brief':[-14,-30,'end'],'Eff':[0,24,'middle'],'ICL':[-12,4,'end'],'SB':[12,4,'start'],'TS':[12,4,'start']};
+  var tip=document.getElementById('tip'),box=document.getElementById('chart');
+  D.forEach(function(d){
+    var cx=x(d.en),cy=y(d.acc),o=off[d.m];
+    if(Math.abs(o[1])>14) el('line',{class:'lead',x1:cx,y1:cy,x2:cx+o[0]*0.7,y2:cy+o[1]*0.75});
+    var t=el('text',{x:cx+o[0],y:cy+o[1]+(o[1]>0?8:0),'text-anchor':o[2]});t.textContent=d.m;
+    if(d.hl){t.setAttribute('style','font-weight:600;fill:var(--ink)')}
+    var col='var(--'+d.c+')',p;
+    if(d.s==='c') p=el('rect',{class:'pt',x:cx-6,y:cy-6,width:12,height:12,rx:2,style:'fill:'+col});
+    else if(d.s==='d') p=el('rect',{class:'pt',x:cx-6,y:cy-6,width:12,height:12,transform:'rotate(45 '+cx+' '+cy+')',style:'fill:'+col});
+    else p=el('circle',{class:'pt',cx:cx,cy:cy,r:7,style:'fill:'+col});
+    var hit=el('circle',{cx:cx,cy:cy,r:14,style:'fill:transparent;cursor:pointer'});
+    function show(){
+      tip.innerHTML='<b>'+d.m+'</b><br>Acc '+d.acc.toFixed(1)+'% · Energy '+d.en.toFixed(1)+'<br>Output tokens '+f(d.out)+(d===base?'':' ('+pct(d.out,base.out)+'%)');
+      tip.hidden=false;
+      var r=box.getBoundingClientRect(),s=svg.getBoundingClientRect(),k=s.width/760;
+      var px=s.left-r.left+box.scrollLeft+cx*k,py=s.top-r.top+cy*k;
+      tip.style.left=Math.min(px+14,box.scrollWidth-tip.offsetWidth-8)+'px';tip.style.top=(py-tip.offsetHeight-10)+'px';
+    }
+    hit.addEventListener('mouseenter',show);hit.addEventListener('mouseleave',function(){tip.hidden=true});
+    hit.addEventListener('touchstart',show,{passive:true});
+  });
+})();
+</script>
+</body>
+</html>
