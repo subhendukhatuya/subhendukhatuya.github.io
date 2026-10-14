@@ -178,7 +178,7 @@ footer{margin-top:4rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-
 <div class="wrap">
   <header class="top">
     <a href="../">← Subhendu Khatuya</a>
-    <span class="status"><i></i>Work in progress · project meeting, Oct 2026</span>
+    <span class="status"><i></i>Work in progress</span>
   </header>
 
   <section class="hero" aria-labelledby="t">
@@ -213,8 +213,6 @@ footer{margin-top:4rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-
       <a href="#method">Proposed method</a>
       <a href="#length">Analysis 1 · length vs difficulty</a>
       <a href="#energy">Analysis 2 · tokens & energy</a>
-      <a href="#next">Status & next steps</a>
-      <a href="#discuss">For discussion</a>
       <a href="#refs">References</a>
     </nav>
 
@@ -338,30 +336,6 @@ footer{margin-top:4rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-
           <div class="find"><span class="k">Takeaway</span><p><strong>Adaptive is the sweet spot so far.</strong> B-Adpt: −13% output tokens, −12% energy, −0.3 pp accuracy.</p></div>
           <div class="find"><span class="k">Takeaway</span><p><strong>Aggressive compression breaks accuracy.</strong> SB saves 88% energy but loses 22 pp; ICL and TS fall to 32–35%.</p></div>
         </div>
-      </section>
-
-      <section id="next">
-        <div class="sec-head"><span class="label">Status & next steps</span><h2>Where the work stands</h2></div>
-        <div class="plan">
-          <div><span class="w">Done</span><p>Length-vs-difficulty analysis on four models (Qwen3-0.6B / 4B, R1-Distill-Qwen-1.5B / 7B)</p><span class="pill done">done</span></div>
-          <div><span class="w">Done</span><p>Token and energy baselines on R1-Distill-Qwen-1.5B, including fixed and adaptive budgets</p><span class="pill done">done</span></div>
-          <div><span class="w">In progress</span><p>Oracle budget labels: minimal budget that still yields the correct answer per query</p><span class="pill run">running</span></div>
-          <div><span class="w">In progress</span><p>Feature extraction: metadata vector <span class="mono">mᵢ</span> + mid-layer hidden state <span class="mono">hᵢ</span></p><span class="pill run">running</span></div>
-          <div><span class="w">Next</span><p>Train scheduler <span class="mono">f_θ</span>; compare hidden-only, metadata-only, and combined features</p><span class="pill todo">planned</span></div>
-          <div><span class="w">Next</span><p>End-to-end batch runs: uniform B vs Predictive Scheduling vs Budget Guidance alone vs ours, at matched total budgets</p><span class="pill todo">planned</span></div>
-          <div><span class="w">Next</span><p>Report accuracy, tokens and energy per query; extend from math to coding and QA</p><span class="pill todo">planned</span></div>
-        </div>
-      </section>
-
-      <section id="discuss">
-        <div class="sec-head"><span class="label">For discussion</span><h2>Open questions for the meeting</h2></div>
-        <ol class="questions">
-          <li>Allocation rule: proportional split, or greedy marginal-accuracy allocation as in Predictive Scheduling?</li>
-          <li>Which layer, and which pooling, for <span class="mono">hᵢ</span>? Predictive Scheduling points to layers 12–17; this should be checked per model.</li>
-          <li>Incorrect answers are the longest. Should the scheduler also predict "likely to fail" and give those queries a small budget?</li>
-          <li>Which baselines are mandatory for a submission, and which benchmarks beyond math?</li>
-          <li>How to report energy: per query, per correct answer, or per batch at matched accuracy?</li>
-        </ol>
       </section>
 
       <section id="refs">
