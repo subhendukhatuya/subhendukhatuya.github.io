@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Batch-Budgeted Reasoning</title>
+<title>Predict, Allocate, Guide</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Ongoing work: predicting per-query reasoning budgets from a shared batch budget, then enforcing them with Budget Guidance.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -182,8 +182,8 @@ footer{margin-top:4rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-
 <div class="wrap">
 
   <section class="hero" aria-labelledby="t">
-    <span class="label">Token-efficient reasoning · ongoing work</span>
-    <h1 id="t">Batch-Budgeted Reasoning</h1>
+    <span class="label">Batch-level token budgets for reasoning models</span>
+    <h1 id="t">Predict, Allocate, Guide</h1>
     <p class="lede">Give a batch of queries one shared token budget <span class="mono">B</span>. Predict how much thinking each query needs from its metadata and the model's hidden states, split <span class="mono">B</span> accordingly, then use Budget Guidance so each answer actually finishes inside its share.</p>
 
     <div class="budget" aria-label="Example allocation of a shared budget">
