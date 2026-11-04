@@ -105,6 +105,10 @@ section{display:grid;gap:1.2rem;min-width:0;scroll-margin-top:1.5rem}
 .steps{margin:0;padding-left:1.4rem;display:grid;gap:.9rem;max-width:72ch}
 .steps li{padding-left:.3rem}
 .steps li::marker{font-family:var(--f-mono);color:var(--accent);font-size:.9em}
+.prior{display:grid;gap:2rem;margin-top:.6rem}
+.prior figure{gap:.7rem}
+.prior figure.narrow{max-width:600px}
+.prior h3{font-size:var(--s0)}
 figure{margin:0;display:grid;gap:.6rem}
 figcaption{font-size:var(--s-1);color:var(--ink-3);max-width:80ch}
 .figframe{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:.6rem;overflow:hidden}
@@ -237,6 +241,18 @@ footer{margin-top:4rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-
           <li><strong>Generate within each budget.</strong> Run every query with <a href="https://arxiv.org/abs/2506.13752">Budget Guidance</a> set to its <span class="mono">bᵢ</span>. A Gamma-distribution predictor of remaining thinking length steers decoding so the model wraps up its reasoning on time instead of being cut off.</li>
           <li><strong>Train the scheduler.</strong> Run training queries at several budgets, label each with the smallest budget that still gives the correct answer, and fit <span class="mono">f_θ</span> on <span class="mono">xᵢ</span> to those labels.</li>
         </ol>
+        <div class="prior">
+          <figure class="narrow">
+            <h3>Why split the budget per query</h3>
+            <div class="figframe"><img src="assets/predictive-scheduling-fig1a.png" alt="Density of per-question probability of a correct answer on GSM8K for token budgets from 16 to 256" loading="lazy" width="830" height="615"></div>
+            <figcaption>Predictive Scheduling, Fig. 1(a) (<a href="https://arxiv.org/abs/2602.01237">Brown, Muppidi &amp; Shahout, 2026</a>). Per-question probability of a correct answer on GSM8K at each token budget. At small budgets most questions sit near 0; as the budget grows, mass moves toward 1, yet a group of questions stays near 0 even at 256 tokens. Questions need very different budgets, which is what steps 3–4 exploit.</figcaption>
+          </figure>
+          <figure>
+            <h3>Why Budget Guidance enforces it</h3>
+            <div class="figframe"><img src="assets/budget-guidance-fig1.png" alt="Example reasoning traces under full thinking, budget forcing and budget guidance, and a plot of accuracy versus thinking length on MATH-500" loading="lazy" width="1670" height="660"></div>
+            <figcaption>Budget Guidance, Fig. 1 (<a href="https://arxiv.org/abs/2506.13752">Li, Zhao, Zhang &amp; Gan, 2025</a>). With a 400-token budget, budget forcing cuts the reasoning off mid-calculation, while budget guidance finishes the same solution in 395 tokens. On MATH-500 it reaches 26% higher accuracy than budget forcing at tight budgets and uses 37% fewer tokens than full thinking. This is the enforcement used in step 5.</figcaption>
+          </figure>
+        </div>
         <details class="fig">
           <summary>Show full method overview figure</summary>
           <figure>
