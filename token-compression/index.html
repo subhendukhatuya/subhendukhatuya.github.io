@@ -232,7 +232,7 @@ footer{margin-top:4rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-
       </section>
 
       <section id="method">
-        <div class="sec-head"><span class="label">Proposed method</span><h2>Method in six steps</h2></div>
+        <div class="sec-head"><h2>Proposed Method</h2></div>
         <ol class="steps">
           <li><strong>Take the batch.</strong> Queries <span class="mono">q₁ … q_N</span> arrive with one shared token budget <span class="mono">B</span> for the whole batch.</li>
           <li><strong>Extract features.</strong> For each query, build a metadata vector <span class="mono">mᵢ</span> (estimated difficulty, length, readability, count of numbers and entities, domain) and take a pooled mid-layer hidden state <span class="mono">hᵢ</span> from one forward pass. Concatenate them: <span class="mono">xᵢ = [mᵢ ‖ hᵢ]</span>.</li>
