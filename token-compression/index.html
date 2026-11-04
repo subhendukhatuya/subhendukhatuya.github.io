@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
-/* Layout: a meeting brief. Narrow contents rail on wide screens, one reading column, figures break wider. */
+/* Layout: a research brief. Narrow contents rail on wide screens, one reading column, figures break wider. */
 :root{
   --paper:#F6F7F9; --sheet:#FFFFFF; --ink:#141B26; --ink-2:#4A5466; --ink-3:#7A8496;
   --rule:#DCE0E7; --accent:#2F5BEA; --accent-soft:#E6ECFD;
@@ -102,6 +102,9 @@ section{display:grid;gap:1.2rem;min-width:0;scroll-margin-top:1.5rem}
 .eq{border-left:2px solid var(--accent);padding:.2rem 0 .2rem 1rem;display:grid;gap:.35rem}
 .eq .f{font-family:var(--f-mono);font-size:.95rem;overflow-x:auto;white-space:nowrap}
 .eq p{font-size:.92rem;color:var(--ink-2)}
+.steps{margin:0;padding-left:1.4rem;display:grid;gap:.9rem;max-width:72ch}
+.steps li{padding-left:.3rem}
+.steps li::marker{font-family:var(--f-mono);color:var(--accent);font-size:.9em}
 figure{margin:0;display:grid;gap:.6rem}
 figcaption{font-size:var(--s-1);color:var(--ink-3);max-width:80ch}
 .figframe{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:.6rem;overflow:hidden}
@@ -114,6 +117,7 @@ details.fig[open] summary{margin-bottom:.8rem}
 
 /* findings */
 .findings{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem}
+.findings.two{grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))}
 .find{display:grid;gap:.35rem;align-content:start}
 .find .k{font-family:var(--f-mono);font-size:var(--s-1);color:var(--accent)}
 .find p{font-size:.96rem;color:var(--ink-2)}
@@ -209,10 +213,10 @@ footer{margin-top:4rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-
   <div class="layout">
     <nav class="toc" aria-label="Sections">
       <a href="#problem">Problem</a>
-      <a href="#lineage">Where the idea comes from</a>
       <a href="#method">Proposed method</a>
-      <a href="#length">Analysis 1 · length vs difficulty</a>
-      <a href="#energy">Analysis 2 · tokens & energy</a>
+      <a href="#frontier">Analysis 1 · non-uniform vs uniform</a>
+      <a href="#length">Analysis 2 · length vs difficulty</a>
+      <a href="#energy">Analysis 3 · tokens & energy</a>
       <a href="#refs">References</a>
     </nav>
 
@@ -227,54 +231,16 @@ footer{margin-top:4rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-
         </div>
       </section>
 
-      <section id="lineage">
-        <div class="sec-head"><span class="label">Where the idea comes from</span><h2>Two papers, one per stage</h2></div>
-        <div class="lineage">
-          <article class="paper">
-            <span class="who">Brown, Muppidi, Shahout · arXiv 2602.01237 (2026)</span>
-            <h3><a href="https://arxiv.org/abs/2602.01237">Predictive Scheduling</a></h3>
-            <ul>
-              <li>Pre-run predictors: an MLP on intermediate hidden states, or a LoRA classifier on question text</li>
-              <li>Greedy batch allocator splits a fixed total token budget across queries</li>
-              <li>GSM8K: up to 7.9 pp accuracy over uniform budgets at equal cost; closes &gt;50% of the gap to an oracle</li>
-              <li>Middle layers (12–17) carry the strongest length signal</li>
-            </ul>
-            <p class="take"><strong>We take:</strong> batch-level allocation from predicted per-query need.</p>
-          </article>
-          <div class="plus" aria-hidden="true">+</div>
-          <article class="paper">
-            <span class="who">Li, Zhao, Zhang, Gan · arXiv 2506.13752 (2025)</span>
-            <h3><a href="https://arxiv.org/abs/2506.13752">Budget Guidance</a></h3>
-            <ul>
-              <li>Lightweight predictor models a Gamma distribution over the <em>remaining</em> thinking length at each step</li>
-              <li>Soft, token-level steering toward a target budget; no LLM fine-tuning</li>
-              <li>Up to 26% accuracy gain on MATH-500 under tight budgets; competitive accuracy with 63% of full thinking tokens</li>
-              <li>Avoids the abrupt cut-off of budget forcing</li>
-            </ul>
-            <p class="take"><strong>We take:</strong> reliable per-query enforcement of an assigned budget.</p>
-          </article>
-          <div class="ours">
-            <span class="label" style="color:var(--accent)">Our combination</span>
-            <p>Predictive Scheduling decides <em>how much</em> each query gets; Budget Guidance makes the model <em>stay within it</em>. We extend the scheduler's input from hidden states alone to <strong>problem metadata + hidden states</strong>.</p>
-          </div>
-        </div>
-      </section>
-
       <section id="method">
-        <div class="sec-head"><span class="label">Proposed method</span><h2>Pipeline</h2></div>
-        <div class="pipe">
-          <div class="st"><span class="n">Step 1</span><h3>Input batch</h3><p>Queries <code>q₁ … q_N</code> and a shared budget <code>B</code>.</p></div>
-          <div class="st"><span class="n">Step 2</span><h3>Features</h3><p>Metadata <code>mᵢ</code> (difficulty estimate, length, readability, numbers, domain) and hidden state <code>hᵢ</code> from one forward pass.</p></div>
-          <div class="st"><span class="n">Step 3</span><h3>Allocate</h3><p>Scheduler <code>f_θ(xᵢ)</code> predicts need <code>âᵢ</code>; normalise so <code>Σ bᵢ = B</code>.</p></div>
-          <div class="st"><span class="n">Step 4</span><h3>Guided generation</h3><p>Budget Guidance steers query <code>i</code> to finish thinking within <code>bᵢ</code>.</p></div>
-          <div class="st"><span class="n">Step 5</span><h3>Outputs</h3><p>Answers with reasoning length <code>≤ bᵢ</code>; total spend <code>≤ B</code>.</p></div>
-        </div>
-        <div class="eqs">
-          <div class="eq"><span class="label">Features</span><div class="f">xᵢ = [ mᵢ ‖ hᵢ ]</div><p>Concatenate metadata and a pooled mid-layer hidden state.</p></div>
-          <div class="eq"><span class="label">Scheduler</span><div class="f">âᵢ = f_θ(xᵢ)</div><p>Regression on needed length, or classification over discrete budget bins.</p></div>
-          <div class="eq"><span class="label">Constraint</span><div class="f">bᵢ = B · âᵢ / Σⱼ âⱼ ,  Σ bᵢ = B</div><p>Proportional split shown; greedy marginal-gain allocation is the alternative.</p></div>
-        </div>
-        <p><strong>Training the scheduler.</strong> Run each training query at several budgets, record the smallest budget that reaches the correct answer as its oracle label, extract <span class="mono">mᵢ</span> and <span class="mono">hᵢ</span>, and fit <span class="mono">f_θ</span> to maximise batch accuracy under the budget constraint.</p>
+        <div class="sec-head"><span class="label">Proposed method</span><h2>Method in six steps</h2></div>
+        <ol class="steps">
+          <li><strong>Take the batch.</strong> Queries <span class="mono">q₁ … q_N</span> arrive with one shared token budget <span class="mono">B</span> for the whole batch.</li>
+          <li><strong>Extract features.</strong> For each query, build a metadata vector <span class="mono">mᵢ</span> (estimated difficulty, length, readability, count of numbers and entities, domain) and take a pooled mid-layer hidden state <span class="mono">hᵢ</span> from one forward pass. Concatenate them: <span class="mono">xᵢ = [mᵢ ‖ hᵢ]</span>.</li>
+          <li><strong>Predict each query's need.</strong> A small scheduler <span class="mono">f_θ(xᵢ)</span> predicts the reasoning length <span class="mono">âᵢ</span> the query needs. This follows <a href="https://arxiv.org/abs/2602.01237">Predictive Scheduling</a>, with metadata added to the hidden-state input.</li>
+          <li><strong>Split the batch budget.</strong> Turn the predictions into per-query budgets <span class="mono">bᵢ</span> with <span class="mono" style="white-space:nowrap">Σ bᵢ = B</span>, by a greedy allocator or an exact solver. Harder queries get more tokens, easier ones fewer.</li>
+          <li><strong>Generate within each budget.</strong> Run every query with <a href="https://arxiv.org/abs/2506.13752">Budget Guidance</a> set to its <span class="mono">bᵢ</span>. A Gamma-distribution predictor of remaining thinking length steers decoding so the model wraps up its reasoning on time instead of being cut off.</li>
+          <li><strong>Train the scheduler.</strong> Run training queries at several budgets, label each with the smallest budget that still gives the correct answer, and fit <span class="mono">f_θ</span> on <span class="mono">xᵢ</span> to those labels.</li>
+        </ol>
         <details class="fig">
           <summary>Show full method overview figure</summary>
           <figure>
@@ -284,8 +250,24 @@ footer{margin-top:4rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-
         </details>
       </section>
 
+      <section id="frontier">
+        <div class="sec-head"><span class="label">Analysis 1 · ongoing</span><h2>Non-uniform allocation vs uniform budgets</h2></div>
+        <p>Accuracy against total generated tokens on the GSM8K test set with DeepSeek-R1-Distill-Qwen-7B under Budget Guidance. The blue line gives every question the same budget; orange points split the budget non-uniformly across questions (greedy or exact allocation); green points are non-uniform runs with 208 tokens deducted per question. Up and to the left is better.</p>
+        <figure>
+          <div class="figframe"><img src="assets/nonuniform_vs_uniform_frontier.png" alt="Two panels of accuracy versus total generated tokens on GSM8K for uniform budgets from 64 to 512 tokens per question and non-uniform greedy and exact allocations at B400 and B432" loading="lazy" width="2105" height="1023"></div>
+          <figcaption>Left: all 1,319 questions. Right: first 1,176 questions (run not finished). Shaded area: more tokens with no higher accuracy.</figcaption>
+        </figure>
+        <div class="findings two">
+          <div class="find"><span class="k">Finding 1</span><p><strong>Same accuracy, fewer tokens.</strong> Exact B400 reaches about 89.7% with about 820K tokens. Uniform needs 512 tokens per question (about 1.03M) to get there, so exact allocation uses roughly 20% fewer tokens.</p></div>
+          <div class="find"><span class="k">Finding 2</span><p><strong>Exact beats greedy.</strong> At the same budget, exact allocation is about 0.3–0.5 pp above greedy (B400: ≈89.7% vs ≈89.15%; B432: ≈89.5% vs ≈89.2%).</p></div>
+          <div class="find"><span class="k">Finding 3</span><p><strong>Deduction moves points left.</strong> With 208 tokens deducted per question, exact B432 reaches ≈89.5% at ≈505K tokens on the partial run, close to uniform 256 (≈89.6% at ≈565K) with about 10% fewer tokens.</p></div>
+          <div class="find"><span class="k">Finding 4</span><p><strong>Uniform is not monotonic.</strong> Uniform 256 hits ≈90.1%, then 316 and 384 drop to ≈88.6–89.0%. Extra uniform tokens past 256 do not reliably buy accuracy.</p></div>
+        </div>
+        <p class="note">Values read off the plot and approximate. The right panel is a partial run.</p>
+      </section>
+
       <section id="length">
-        <div class="sec-head"><span class="label">Analysis 1 · ongoing</span><h2>Reasoning length grows with difficulty, and wrong answers run long</h2></div>
+        <div class="sec-head"><span class="label">Analysis 2 · ongoing</span><h2>Reasoning length grows with difficulty, and wrong answers run long</h2></div>
         <p>Total tokens per response against problem difficulty (levels 1–5) for four reasoning models. Green points are correct answers, red are incorrect; diamonds mark the means.</p>
         <div class="findings">
           <div class="find"><span class="k">Finding 1</span><p><strong>Need scales with difficulty.</strong> Mean length of correct answers rises from about 2k tokens at level 1 to about 5–7k at level 5 in every model. A per-query budget has something real to predict.</p></div>
@@ -310,7 +292,7 @@ footer{margin-top:4rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-
       </section>
 
       <section id="energy">
-        <div class="sec-head"><span class="label">Analysis 2 · ongoing</span><h2>Tokens, accuracy and energy on DeepSeek-R1-Distill-Qwen-1.5B</h2></div>
+        <div class="sec-head"><span class="label">Analysis 3 · ongoing</span><h2>Tokens, accuracy and energy on DeepSeek-R1-Distill-Qwen-1.5B</h2></div>
         <p>Ten configurations compared against the unconstrained base model. The adaptive budget (B-Adpt) is the only setting that cuts energy by more than 10% while staying within half a point of base accuracy.</p>
 
         <div class="chart" id="chart">
@@ -348,7 +330,7 @@ footer{margin-top:4rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-
     </main>
   </div>
 
-  <footer><span>Subhendu Khatuya · ongoing research, results are preliminary</span><span>Last updated 14 Oct 2026</span></footer>
+  <footer><span>Subhendu Khatuya · ongoing research, results are preliminary</span><span>Last updated 4 Nov 2026</span></footer>
 </div>
 
 <script>
