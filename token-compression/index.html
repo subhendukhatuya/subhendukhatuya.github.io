@@ -180,10 +180,15 @@ footer{margin-top:4rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-
   .seg{font-size:0}
 }
 @media (prefers-reduced-motion:reduce){.seg{transition:none}}
+.topnav{display:flex;gap:4px;border-bottom:1px solid var(--rule);padding-top:18px;margin-bottom:8px}
+.topnav a{font-family:var(--f-mono);font-size:13px;text-decoration:none;color:var(--ink3,var(--ink-3));padding:8px 14px;border-bottom:2px solid transparent;margin-bottom:-1px}
+.topnav a:hover{color:var(--accent)}
+.topnav a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
 </style>
 </head>
 <body>
 <div class="wrap">
+  <nav class="topnav" aria-label="Project pages"><a href="./" aria-current="page">Overview</a><a href="demo/">Demo</a></nav>
 
   <section class="hero" aria-labelledby="t">
     <span class="label">Batch-level token budgets for reasoning models</span>

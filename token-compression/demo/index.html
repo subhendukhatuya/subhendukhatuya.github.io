@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Predict, Allocate, Guide · Demo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a single guided column (stepper) with a sticky budget control; each step pairs a short claim with a live figure. */
+:root{
+  --bg:#F5F7FA; --panel:#FFFFFF; --ink:#111827; --ink2:#4B5563; --ink3:#8A93A3; --rule:#DFE4EB; --soft:#EEF2F7;
+  --accent:#1F5FD6; --accent-soft:#E5EDFC;
+  --m-uni:#8A93A3; --m-guide:#7C6CD6; --m-ps:#C47A12; --m-sp:#0E8C7A;
+  --ok:#1C8A4A; --bad:#C8402F; --warn:#B26A00; --cut:#C8402F;
+  --f-head:"Space Grotesk","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E131B; --panel:#151C27; --ink:#E7ECF3; --ink2:#AEB7C5; --ink3:#7D8798; --rule:#263042; --soft:#1B2331;
+  --accent:#7EA6FF; --accent-soft:#1A2744;
+  --m-uni:#8C96A8; --m-guide:#A597F2; --m-ps:#E0A040; --m-sp:#3CC3AC;
+  --ok:#4CC27E; --bad:#F07A68; --warn:#E6A84A; --cut:#F07A68; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E131B; --panel:#151C27; --ink:#E7ECF3; --ink2:#AEB7C5; --ink3:#7D8798; --rule:#263042; --soft:#1B2331;
+  --accent:#7EA6FF; --accent-soft:#1A2744;
+  --m-uni:#8C96A8; --m-guide:#A597F2; --m-ps:#E0A040; --m-sp:#3CC3AC;
+  --ok:#4CC27E; --bad:#F07A68; --warn:#E6A84A; --cut:#F07A68; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+h1,h2,h3{font-family:var(--f-head);margin:0;line-height:1.15;text-wrap:balance}
+h1{font-size:clamp(30px,4.6vw,46px);letter-spacing:-.02em}
+h2{font-size:clamp(22px,2.8vw,28px);letter-spacing:-.01em}
+h3{font-size:16px}
+p{margin:0;max-width:68ch}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
+.muted{color:var(--ink2)}
+.small{font-size:13px}
+a{color:var(--accent)}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+/* header */
+header.hero{display:grid;gap:14px;padding-block:36px 22px}
+.hero .lede{font-size:17px;color:var(--ink2);max-width:62ch}
+.tag{display:inline-flex;gap:6px;align-items:center;font-family:var(--f-mono);font-size:12px;color:var(--warn);background:color-mix(in srgb,var(--warn) 12%,transparent);padding:3px 9px;border-radius:999px;width:max-content}
+
+/* sticky control */
+.control{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--rule);padding-block:10px;margin-bottom:22px}
+.control-in{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px}
+.control label{font-weight:600}
+.control input[type=range]{flex:1 1 220px;accent-color:var(--accent);min-width:0}
+.control .val{font-family:var(--f-mono);font-size:15px;font-weight:600;min-width:9ch}
+.control .hint{font-size:13px;color:var(--ink3)}
+
+/* scoreboard */
+.score{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:14px;display:grid;gap:8px;align-content:start;position:relative;overflow:hidden}
+.card .name{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px}
+.sw{width:10px;height:10px;border-radius:3px;display:inline-block;flex:none}
+.card .how{font-size:12.5px;color:var(--ink3);min-height:2.6em}
+.card .big{font-family:var(--f-head);font-size:34px;font-weight:700;line-height:1}
+.card .big small{font-size:15px;color:var(--ink3);font-weight:500}
+.dots{display:flex;gap:4px}
+.dot{width:14px;height:14px;border-radius:50%;display:grid;place-items:center;font-size:9px;font-family:var(--f-mono);color:#fff}
+.dot.ok{background:var(--ok)} .dot.no{background:transparent;border:1.5px solid var(--bad);color:var(--bad)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:13px}
+.kv dt{color:var(--ink3)} .kv dd{margin:0;text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.card.best{border-color:var(--m-sp);box-shadow:0 0 0 1px var(--m-sp) inset}
+.card.best::after{content:"ours";position:absolute;top:10px;right:10px;font-family:var(--f-mono);font-size:11px;color:var(--m-sp);border:1px solid var(--m-sp);border-radius:999px;padding:0 7px}
+
+/* steps */
+.step{display:grid;gap:14px;padding-block:44px 6px;scroll-margin-top:70px}
+.step-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;align-items:start}
+.num{font-family:var(--f-head);font-weight:700;font-size:15px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:var(--bg);grid-row:span 2}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:16px;min-width:0}
+.scroll{overflow-x:auto}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--ink2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+
+/* batch table */
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);font-weight:600}
+td.r,th.r{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.qid{font-family:var(--f-mono);font-weight:600;color:var(--accent)}
+.chip{display:inline-block;font-family:var(--f-mono);font-size:11px;padding:1px 6px;border-radius:4px;background:var(--soft);color:var(--ink2);margin:2px 4px 0 0;white-space:nowrap}
+.chip.warn{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad)}
+.hidden-need{filter:blur(4px);transition:filter .3s}
+.reveal .hidden-need{filter:none}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:7px;overflow:hidden}
+.seg button{border:0;background:var(--panel);color:var(--ink);padding:6px 12px;font-size:13px;border-right:1px solid var(--rule)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+.hs{display:inline-flex;gap:2px;vertical-align:middle}.hs i{width:7px;height:14px;border-radius:2px;background:var(--accent);display:block}
+.toggle{border:1px solid var(--rule);background:var(--panel);color:var(--ink);border-radius:6px;padding:5px 10px;font-size:13px}
+.toggle[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* svg text */
+svg text{font-family:var(--f-mono);font-size:11px;fill:var(--ink2)}
+svg .lbl{fill:var(--ink)}
+svg .axis{stroke:var(--rule)}
+svg .grid{stroke:var(--rule);stroke-dasharray:2 4}
+
+/* trace viewer */
+.qpick{display:flex;flex-wrap:wrap;gap:6px}
+.qpick button{border:1px solid var(--rule);background:var(--panel);color:var(--ink);border-radius:6px;padding:5px 10px;font-size:13px}
+.qpick button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.traces{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.trace{border:1px solid var(--rule);border-radius:8px;background:var(--soft);display:grid;grid-template-rows:auto auto 1fr auto;min-width:0}
+.trace header{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--rule)}
+.trace .meter{height:6px;background:var(--rule);position:relative}
+.trace .meter i{position:absolute;inset:0 auto 0 0;background:var(--accent);display:block}
+.trace .body{padding:12px;font-family:var(--f-mono);font-size:12.5px;line-height:1.6;min-height:210px;white-space:pre-wrap;word-break:break-word}
+.seg-skip{opacity:.4;text-decoration:line-through}
+.seg-cut{color:var(--cut);font-weight:600}
+.seg-ans{font-weight:600}
+.trace footer{padding:10px 12px;border-top:1px solid var(--rule);font-size:13px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.verdict.ok{color:var(--ok);font-weight:600} .verdict.no{color:var(--bad);font-weight:600}
+.play{border:1px solid var(--accent);background:transparent;color:var(--accent);border-radius:6px;padding:5px 12px;font-size:13px}
+.play:hover{background:var(--accent-soft)}
+
+/* loop */
+.lanes{display:grid;gap:7px}
+.lane{display:grid;grid-template-columns:34px minmax(0,1fr) 128px;gap:10px;align-items:center}
+.track{position:relative;height:18px;background:var(--soft);border-radius:4px;overflow:hidden}
+.track .b0{position:absolute;inset:0 auto 0 0;border:1.5px dashed var(--ink3);border-radius:4px;background:transparent}
+.track .fill{position:absolute;inset:0 auto 0 0;border-radius:4px;background:var(--m-sp);opacity:.85}
+.track .extra{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(45deg,var(--m-sp) 0 4px,transparent 4px 8px);opacity:.9;border-radius:0 4px 4px 0}
+.track .ck{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--accent)}
+.lane .st{font-family:var(--f-mono);font-size:12px;text-align:right;white-space:nowrap}
+.pool{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:13.5px}
+.poolbar{flex:1 1 240px;height:10px;background:var(--soft);border-radius:999px;position:relative;overflow:hidden;min-width:0}
+.poolbar i{position:absolute;inset:0 auto 0 0;background:var(--accent);display:block;border-radius:999px}
+
+/* novelty */
+.nov{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.nov .card h3{font-size:16px}
+.nov .card p{font-size:14px;color:var(--ink2)}
+.vs{font-size:12.5px;color:var(--ink3);border-top:1px dashed var(--rule);padding-top:8px}
+.pos td,.pos th{text-align:center} .pos td:first-child,.pos th:first-child{text-align:left}
+.c{display:inline-block;width:12px;height:12px;border-radius:50%;border:1.5px solid var(--ink2);vertical-align:middle}.c.f{background:var(--ink2)}.c.h{background:linear-gradient(90deg,var(--ink2) 50%,transparent 50%)}.pos tr.us .c{border-color:var(--m-sp)}.pos tr.us .c.f{background:var(--m-sp)}
+.pos tr.us td{background:var(--accent-soft);font-weight:600}
+
+.contrib{margin:0;padding-left:1.4em;display:grid;gap:12px;max-width:78ch}
+.contrib li{padding-left:.3em}
+.contrib li::marker{font-family:var(--f-head);font-weight:700;color:var(--accent)}
+.contrib b{color:var(--ink)}
+.callout{border-left:3px solid var(--accent);padding:6px 0 6px 14px;color:var(--ink2);font-size:14px}
+footer.note{margin-top:48px;padding-top:16px;border-top:1px solid var(--rule);font-size:13px;color:var(--ink3);display:grid;gap:6px}
+
+@media (max-width:860px){.score{grid-template-columns:repeat(2,minmax(0,1fr))}.nov{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){.traces{grid-template-columns:minmax(0,1fr)}.lane{grid-template-columns:30px minmax(0,1fr) 112px}}
+@media (max-width:430px){.score{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.topnav{display:flex;gap:4px;border-bottom:1px solid var(--rule);padding-top:18px;margin-bottom:8px}
+.topnav a{font-family:var(--f-mono);font-size:13px;text-decoration:none;color:var(--ink3,var(--ink-3));padding:8px 14px;border-bottom:2px solid transparent;margin-bottom:-1px}
+.topnav a:hover{color:var(--accent)}
+.topnav a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="topnav" aria-label="Project pages"><a href="../">Overview</a><a href="./" aria-current="page">Demo</a></nav>
+  <header class="hero">
+    <h1>Predict, Allocate, Guide</h1>
+    <p class="lede">We give a batch of questions one shared token budget and decide, question by question, how much of it each one gets. This page walks through the idea on a small made-up batch of eight questions. The slider sets the total budget, and everything below is recomputed from it.</p>
+  </header>
+
+  <div class="control" role="group" aria-label="Batch budget">
+    <div class="control-in">
+      <label for="B">Total budget B</label>
+      <input id="B" type="range" min="4000" max="12000" step="250" value="8000">
+      <span class="val mono" id="Bval">8,000 tok</span>
+      <span class="hint" id="Bhint">= 1,000 tokens per question if split evenly</span>
+    </div>
+  </div>
+
+  <section aria-labelledby="sb">
+    <div class="step-head" style="grid-template-columns:1fr">
+      <span class="eyebrow" id="sb">How the four approaches do on this batch</span>
+    </div>
+    <div class="score" id="score" style="margin-top:10px"></div>
+    <p class="small muted" style="margin-top:10px" id="scoreNote"></p>
+  </section>
+
+  <!-- STEP 0 -->
+  <section class="step" id="batch">
+    <div class="step-head">
+      <span class="num">0</span>
+      <h2>The batch</h2>
+      <p class="muted">Eight made-up questions, from trivial to one this model can't solve. How many reasoning tokens each one really needs isn't known when the batch arrives. You can reveal it to check the estimates in the next step.</p>
+    </div>
+    <div class="panel scroll" id="batchPanel">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="toggle" id="revealBtn" aria-pressed="false" type="button">Reveal true need</button></div>
+      <table>
+        <thead><tr><th>#</th><th>Question</th><th>Topic</th><th class="r">True need</th><th class="r">Unconstrained length</th></tr></thead>
+        <tbody id="batchBody"></tbody>
+      </table>
+      <p class="small muted" style="margin-top:10px">Unconstrained length: what the model produces with no budget. Q1 needs 180 tokens and writes about 1,080, because it keeps re-checking after it has the answer. Q8 never converges.</p>
+    </div>
+  </section>
+
+  <!-- STEP 1 -->
+  <section class="step" id="predict">
+    <div class="step-head">
+      <span class="num">1</span>
+      <h2>Estimating how much each question needs</h2>
+      <p class="muted">Before the model writes anything, we run one forward pass over the question. That pass gives two kinds of signal at almost no cost: simple features of the text, and the model's hidden state at a middle layer. A small predictor turns them into an estimated need with an uncertainty range, and into a probability that the question can't be solved at all.</p>
+    </div>
+    <div class="panel scroll">
+      <table class="feat">
+        <thead><tr><th>#</th><th class="r">Length</th><th class="r">Numbers</th><th class="r">Reading grade</th><th>Topic</th><th>Difficulty tag</th><th>Hidden state (layer 14, pooled)</th></tr></thead>
+        <tbody id="featBody"></tbody>
+      </table>
+      <p class="small muted" style="margin-top:8px">Text features come from the question alone. The difficulty tag is from a small classifier trained on public difficulty labels. The hidden state is drawn here as 16 of its dimensions; the predictor uses all of them.</p>
+    </div>
+    <div class="panel scroll" style="display:grid;gap:10px">
+      <div style="display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center">
+        <span class="small" style="font-weight:600">Predict from</span>
+        <div class="seg" role="group" aria-label="Features used by the predictor">
+          <button type="button" data-f="meta" aria-pressed="false">Text features</button>
+          <button type="button" data-f="hid" aria-pressed="false">Hidden state</button>
+          <button type="button" data-f="both" aria-pressed="true">Both</button>
+        </div>
+        <span class="small muted">This choice also drives "Ours" everywhere else on the page.</span>
+      </div>
+      <div class="legend">
+        <span><svg width="22" height="10" aria-hidden="true"><line x1="1" y1="5" x2="21" y2="5" stroke="var(--accent)" stroke-width="2"/><circle cx="11" cy="5" r="4" fill="var(--accent)"/></svg>estimate and uncertainty</span>
+        <span><svg width="10" height="12" aria-hidden="true"><rect x="4" y="0" width="2" height="12" fill="var(--ink)"/></svg>true need</span>
+        <span><svg width="14" height="12" aria-hidden="true"><rect x="0" y="2" width="14" height="8" rx="2" fill="var(--bad)" opacity=".25"/></svg>flagged as likely unsolvable</span>
+      </div>
+      <svg id="predSvg" viewBox="0 0 900 330" style="width:100%;min-width:620px;display:block" role="img" aria-label="Estimated versus true reasoning need per question"></svg>
+      <p class="small" id="featNote"></p>
+    </div>
+    <div class="panel scroll">
+      <h3 style="margin-bottom:4px">What the choice of features does to this batch</h3>
+      <p class="small muted" style="margin-bottom:8px">Same total budget, same allocation and guidance; only the predictor's input changes. The last row uses the true needs, which no real system has.</p>
+      <svg id="featSvg" viewBox="0 0 900 200" style="width:100%;min-width:620px;display:block" role="img" aria-label="Correct answers by feature set"></svg>
+    </div>
+    <p class="callout">Why both kinds of features: text features are cheap and the same for every model, but they judge a question by its surface. Q3 looks hard because it is long and full of numbers; Q4 looks easy because it is short. The hidden state reflects how the model itself represents the problem and gets those two right, but it is less sure about Q2 and Q5 and only weakly flags Q8. Together they give the same allocation as the true needs in this example.</p>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="step" id="allocate">
+    <div class="step-head">
+      <span class="num">2</span>
+      <h2>Splitting the budget</h2>
+      <p class="muted">All three spend the same total. The uniform split gives every question an eighth. Predictive Scheduling funds the questions it expects to be cheapest first and stops the model at the limit. We size each budget for guided decoding, which needs less than the full natural length, add a margin where the estimate is uncertain, and give a question that looks unsolvable only a small cap.</p>
+    </div>
+    <div class="panel scroll">
+      <div class="legend" style="margin-bottom:8px">
+        <span><i class="sw" style="background:var(--m-uni)"></i>Uniform</span>
+        <span><i class="sw" style="background:var(--m-ps)"></i>Predictive Scheduling</span>
+        <span><i class="sw" style="background:var(--m-sp)"></i>Ours (after reallocation)</span>
+        <span><svg width="10" height="12" aria-hidden="true"><rect x="4" y="0" width="2" height="12" fill="var(--ink)"/></svg>need with truncation</span>
+        <span><svg width="10" height="12" aria-hidden="true"><rect x="4" y="0" width="2" height="12" fill="var(--ink3)" /></svg>need with guidance (75%)</span>
+      </div>
+      <svg id="allocSvg" viewBox="0 0 900 545" style="width:100%;min-width:620px;display:block" role="img" aria-label="Allocated budget per question for three methods"></svg>
+    </div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="step" id="guide">
+    <div class="step-head">
+      <span class="num">3</span>
+      <h2>Keeping the model inside its budget</h2>
+      <p class="muted">A budget is only useful if the model can keep it. Budget forcing stops generation when the budget is hit, often mid-derivation. Budget Guidance steers decoding as the budget runs out, so the model skips optional re-checking and writes its conclusion. Pick a question and a budget, then play both side by side.</p>
+    </div>
+    <div class="panel" style="display:grid;gap:12px">
+      <div style="display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center">
+        <div class="qpick" id="qpick" role="tablist" aria-label="Question"></div>
+        <div style="display:flex;align-items:center;gap:8px;flex:1 1 240px;min-width:0">
+          <label for="tb" class="small" style="font-weight:600;white-space:nowrap">Budget</label>
+          <input id="tb" type="range" min="100" max="3000" step="10" value="1300" style="flex:1;min-width:0;accent-color:var(--accent)">
+          <span class="mono small" id="tbv" style="min-width:8ch">1,300 tok</span>
+        </div>
+        <button class="play" id="playTrace" type="button">▶ Play</button>
+      </div>
+      <div class="traces">
+        <article class="trace" aria-label="Budget forcing">
+          <header><b>Budget forcing</b><span class="mono small" id="fUsed"></span></header>
+          <div class="meter"><i id="fMeter"></i></div>
+          <div class="body" id="fBody"></div>
+          <footer><span class="verdict" id="fVerdict"></span><span class="muted small" id="fNote"></span></footer>
+        </article>
+        <article class="trace" aria-label="Budget guidance">
+          <header><b>Budget Guidance</b><span class="mono small" id="gUsed"></span></header>
+          <div class="meter"><i id="gMeter"></i></div>
+          <div class="body" id="gBody"></div>
+          <footer><span class="verdict" id="gVerdict"></span><span class="muted small" id="gNote"></span></footer>
+        </article>
+      </div>
+      <p class="small muted">Traces are written for this demo; token counts are illustrative. Struck-through steps are the re-checks that guidance drops when the budget is tight.</p>
+    </div>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="step" id="loop">
+    <div class="step-head">
+      <span class="num">4</span>
+      <h2>Re-planning halfway through</h2>
+      <p class="muted">At a checkpoint (600 tokens here), easy questions are already done and Q8 has hit its cap. The unspent budget goes back to a shared pool. The remaining-length estimate from guidance is now sharper than the prefill prediction, so the allocator re-plans the open questions: over-padded ones give tokens back, under-funded ones receive them. In the first plan Q2 (underestimated) and Q7 (left short) would fail; after re-planning both are correct.</p>
+    </div>
+    <div class="panel" style="display:grid;gap:14px">
+      <div class="pool">
+        <button class="play" id="playLoop" type="button">▶ Replay</button>
+        <span>Pool at checkpoint</span>
+        <div class="poolbar" aria-hidden="true"><i id="poolFill"></i></div>
+        <span class="mono" id="poolTxt"></span>
+      </div>
+      <div class="lanes" id="lanes"></div>
+      <div class="legend">
+        <span><svg width="22" height="12" aria-hidden="true"><rect x="1" y="1" width="20" height="10" rx="2" fill="none" stroke="var(--ink3)" stroke-dasharray="3 2"/></svg>first allocation</span>
+        <span><i class="sw" style="background:var(--m-sp)"></i>tokens used</span>
+        <span><svg width="22" height="12" aria-hidden="true"><defs><pattern id="hp" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="3" height="6" fill="var(--m-sp)"/></pattern></defs><rect x="1" y="1" width="20" height="10" rx="2" fill="url(#hp)"/></svg>extra budget after reallocation</span>
+        <span><svg width="6" height="12" aria-hidden="true"><rect x="2" y="0" width="2" height="12" fill="var(--accent)"/></svg>checkpoint</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 5 -->
+  <section class="step" id="frontier">
+    <div class="step-head">
+      <span class="num">5</span>
+      <h2>Other budgets</h2>
+      <p class="muted">The same batch, run at every total budget from 4,000 to 12,000 tokens. Our method reaches 7 of 8 (everything solvable) with far less budget than the others, and the uniform methods never get there in this range. The vertical line is the budget currently set above.</p>
+    </div>
+    <div class="panel scroll">
+      <svg id="frontSvg" viewBox="0 0 960 340" style="width:100%;min-width:620px;display:block" role="img" aria-label="Correct answers versus total budget for four methods"></svg>
+    </div>
+    <p class="callout" id="frontNote"></p>
+  </section>
+
+  <!-- CONTRIBUTIONS -->
+  <section class="step" id="contributions">
+    <div class="step-head" style="grid-template-columns:1fr">
+      <h2>Novel contributions</h2>
+    </div>
+    <ol class="contrib">
+      <li><b>Need estimation from text features and hidden states together.</b> One forward pass over the question gives both. The predictor outputs an estimated need with an uncertainty range and a probability that the question can't be solved, instead of a single number from one source.</li>
+      <li><b>Predictors judged by the allocation they produce.</b> We score a predictor by how many answers the batch loses when its estimates are used in place of the true needs, not by its average length error.</li>
+      <li><b>Allocation that plans for uncertainty and for failure.</b> Budgets are sized for guided decoding, padded where the estimate is unsure, and a question that looks unsolvable gets only a small cap, so it can't absorb the budget others need.</li>
+      <li><b>A different budget for every question, kept without cutting the model off.</b> Budget Guidance has so far been used with one budget for all questions. We apply it per question, with targets that differ by two orders of magnitude within one batch.</li>
+      <li><b>Re-planning while the batch runs.</b> At checkpoints, tokens left over by finished or capped questions are handed to questions that are running short, using the sharper remaining-length estimate available during generation.</li>
+      <li><b>Energy per correct answer as the headline measure.</b> Beyond tokens, we measure GPU energy in a serving engine, where a few very long requests can cost more than their token count suggests.</li>
+    </ol>
+    <div class="panel scroll" style="margin-top:12px">
+      <table class="pos">
+        <thead><tr><th>Method</th><th>Predicts need before generating</th><th>Shared batch budget</th><th>Keeps budget without truncation</th><th>No LLM fine-tuning</th><th>Run-time reallocation</th></tr></thead>
+        <tbody>
+          <tr><td>Budget forcing (s1)</td><td><i class="c"></i></td><td><i class="c"></i></td><td><i class="c h"></i></td><td><i class="c f"></i></td><td><i class="c"></i></td></tr>
+          <tr><td>TALE</td><td><i class="c f"></i></td><td><i class="c"></i></td><td><i class="c h"></i></td><td><i class="c h"></i></td><td><i class="c"></i></td></tr>
+          <tr><td>L1 (RL length control)</td><td><i class="c"></i></td><td><i class="c"></i></td><td><i class="c f"></i></td><td><i class="c"></i></td><td><i class="c"></i></td></tr>
+          <tr><td>Budget Guidance</td><td><i class="c"></i></td><td><i class="c"></i></td><td><i class="c f"></i></td><td><i class="c f"></i></td><td><i class="c"></i></td></tr>
+          <tr><td>Predictive Scheduling</td><td><i class="c f"></i></td><td><i class="c f"></i></td><td><i class="c h"></i></td><td><i class="c f"></i></td><td><i class="c"></i></td></tr>
+          <tr class="us"><td>This work</td><td><i class="c f"></i></td><td><i class="c f"></i></td><td><i class="c f"></i></td><td><i class="c f"></i></td><td><i class="c f"></i></td></tr>
+        </tbody>
+      </table>
+      <p class="small muted" style="margin-top:8px"><i class="c f"></i> addressed &nbsp; <i class="c h"></i> partly &nbsp; <i class="c"></i> not addressed. Based on our reading of the published papers.</p>
+    </div>
+  </section>
+
+  <footer class="note">
+    <span>About the toy model. Questions, features and numbers are made up to show the mechanism. Rules: with truncation a question is correct only if its budget covers its full need; with guidance, 75% of the need suffices and the model stops at its need or its budget; unsolvable questions are always wrong. Energy assumes 0.6 J per generated token.</span>
+    <span>Real preliminary results (GSM8K, MATH-500, four models) are on the <a href="../">Overview tab</a>.</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+const J_PER_TOK=0.6, G=0.75, CAP=200, CK=600;
+const Q=[
+ {id:1,n:180, o:6.0,solv:true, q:"What is 17 + 26?", f:{tok:9,num:2,grade:1.2,topic:"arithmetic",diff:"easy"}},
+ {id:2,n:420, o:3.0,solv:true, q:"A shirt costs €20 after a 20% discount. What was the original price?", f:{tok:19,num:2,grade:5.8,topic:"percentages",diff:"easy"}},
+ {id:3,n:900, o:2.2,solv:true, q:"Train A leaves at 9:00 at 80 km/h, train B follows at 10:00 at 100 km/h. When does B catch up?", f:{tok:31,num:4,grade:6.9,topic:"rates",diff:"hard"}},
+ {id:4,n:1300,o:2.0,solv:true, q:"How many positive divisors does 360 have?", f:{tok:10,num:1,grade:4.1,topic:"number theory",diff:"easy"}},
+ {id:5,n:1700,o:1.8,solv:true, q:"Solve for real x: √(x + 5) + √x = 5.", f:{tok:14,num:2,grade:3.5,topic:"algebra",diff:"medium"}},
+ {id:6,n:2100,o:1.7,solv:true, q:"Two dice are rolled and at least one shows a 6. What is the probability that the sum is prime?", f:{tok:24,num:2,grade:7.4,topic:"probability",diff:"hard"}},
+ {id:7,n:3200,o:1.5,solv:true, q:"How many integer pairs (a, b) satisfy a² + b² = 2025?", f:{tok:16,num:3,grade:3.9,topic:"number theory",diff:"medium"}},
+ {id:8,n:2600,o:4.6,solv:false, q:"Find all f: ℝ→ℝ with f(x + f(y)) = f(x) + y² f(y) for all x, y.", f:{tok:27,num:1,grade:9.6,topic:"functional eq.",diff:"hard"}},
+];
+// Predictor quality per feature set (synthetic): multiplicative error, relative uncertainty, P(unsolvable) for Q8
+const FS={
+ meta:{label:"Text features only",err:[1.6,1.3,1.9,0.45,0.7,1.2,0.8,1.0],sig:[.35,.35,.35,.35,.35,.35,.35,.4],pfail:.35},
+ hid:{label:"Hidden state only",err:[1.25,0.8,1.15,1.25,0.75,1.12,1.12,1.0],sig:[.15,.2,.15,.18,.3,.18,.2,.35],pfail:.75},
+ both:{label:"Both",err:[1.20,0.88,1.10,1.15,0.82,1.08,1.05,1.0],sig:[.10,.12,.12,.15,.25,.15,.18,.35],pfail:.86},
+ oracle:{label:"True needs (oracle)",err:[1,1,1,1,1,1,1,1],sig:[.02,.02,.02,.02,.02,.02,.02,.02],pfail:1},
+};
+let feat='both';
+const N=Q.length;
+const fmt=n=>Math.round(n).toLocaleString('en-US');
+// ---------- simulation ----------
+function runForce(q,b){const nat=q.solv?q.n*q.o:Infinity;return{used:Math.min(b,nat),ok:q.solv&&b>=q.n}}
+function runGuide(q,b){if(!q.solv)return{used:b,ok:false};return{used:Math.min(b,q.n),ok:b>=G*q.n}}
+function greedy(costs,B,idxs){idxs=idxs||[...costs.keys()];const b={};let R=B;const ord=[...idxs].sort((a,c)=>costs[a]-costs[c]);const unf=[];
+  for(const i of ord){if(costs[i]<=R){b[i]=costs[i];R-=costs[i]}else{b[i]=0;unf.push(i)}}
+  if(unf.length)unf.forEach(i=>b[i]+=R/unf.length);else ord.forEach(i=>b[i]+=R/ord.length);return b}
+const uniform=B=>Q.map(()=>B/N);
+const flagged=(i,F)=>i===7&&F.pfail>.7;
+// Predictive Scheduling: hidden-state predictor, point estimates, truncation
+const ps=B=>{const F=FS.hid;const b=greedy(Q.map((q,i)=>q.n*F.err[i]),B);return Q.map((_,i)=>b[i])};
+const spStatic=(B,F)=>{const b=greedy(Q.map((q,i)=>flagged(i,F)?CAP:q.n*F.err[i]*G*(1+F.sig[i])),B);return Q.map((_,i)=>b[i])};
+function spLoop(B,F){F=F||FS[feat];const b0=spStatic(B,F);const res=Array(N).fill(null);let used=0;
+  Q.forEach((q,i)=>{if(flagged(i,F)){const u=Math.min(b0[i],CAP);res[i]={used:u,ok:false,b:u,b0:b0[i],phase:1};used+=u;return}
+    if(q.solv&&q.n<=Math.min(b0[i],CK)){res[i]={used:q.n,ok:true,b:b0[i],b0:b0[i],phase:1};used+=q.n}});
+  const open=Q.map((q,i)=>i).filter(i=>!res[i]);
+  const spent=open.reduce((s,i)=>s+Math.min(b0[i],CK),0);
+  const R=Math.max(0,B-used-spent);
+  const costs={};open.forEach(i=>{const e=1+(F.err[i]-1)*0.3;costs[i]=Math.max(0,Q[i].n*e*G*1.06-Math.min(b0[i],CK))});
+  const bb=greedy(costs,R,open);
+  open.forEach(i=>{const tot=Math.min(b0[i],CK)+bb[i];const r=runGuide(Q[i],tot);res[i]={...r,b:tot,b0:b0[i],phase:2}});
+  return{res}}
+function evalM(m,B,F){
+  if(m==='sp'){const L=spLoop(B,F);const t=L.res.reduce((s,r)=>s+r.used,0);return{b:L.res.map(r=>r.b),oks:L.res.map(r=>r.ok),tok:t,L}}
+  const b=m==='uni'||m==='guide'?uniform(B):ps(B);const run=m==='guide'?runGuide:runForce;
+  const r=b.map((x,i)=>run(Q[i],x));return{b,oks:r.map(x=>x.ok),tok:r.reduce((s,x)=>s+x.used,0)}}
+const M=[
+ {k:'uni',name:'Uniform + forcing',how:'same slice for all, cut off at the limit',col:'--m-uni'},
+ {k:'guide',name:'Uniform + guidance',how:'same slice for all, Budget Guidance',col:'--m-guide'},
+ {k:'ps',name:'Predictive Scheduling',how:'predicted budgets, cut off at the limit',col:'--m-ps'},
+ {k:'sp',name:'Ours: predict + allocate + guide',how:'predict, allocate, guide, reallocate',col:'--m-sp'},
+];
+// ---------- DOM ----------
+const $=id=>document.getElementById(id);
+const Bin=$('B');
+function svgEl(svg,tag,attrs,text){const e=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;svg.appendChild(e);return e}
+
+// batch table
+(function(){let h='';Q.forEach(q=>{h+=`<tr><td class="qid">Q${q.id}</td><td>${q.q}</td><td><span class="chip">${q.f.topic}</span></td><td class="r"><span class="hidden-need">${q.solv?fmt(q.n):'—'}</span></td><td class="r"><span class="hidden-need">${q.solv?fmt(q.n*q.o):'never ends'}</span></td></tr>`});$('batchBody').innerHTML=h;
+ $('revealBtn').addEventListener('click',e=>{const on=e.currentTarget.getAttribute('aria-pressed')!=='true';e.currentTarget.setAttribute('aria-pressed',on);e.currentTarget.textContent=on?'Hide true need':'Reveal true need';$('batchPanel').classList.toggle('reveal',on)})})();
+
+// step 1: feature table
+const hsv=(q,k)=>{const m=FS.both.err[q.id-1];return (Math.sin(q.id*3.1+k*1.7)*0.5+0.5)*0.7+((k%4===0)?Math.min(1,q.n/3200)*0.3:0)};
+(function(){let h='';Q.forEach(q=>{let strip='';for(let k=0;k<16;k++)strip+=`<i style="opacity:${(0.12+0.88*hsv(q,k)).toFixed(2)}"></i>`;
+ const tagCls=(q.id===3||q.id===4)?' warn':'';
+ h+=`<tr><td class="qid">Q${q.id}</td><td class="r">${q.f.tok} tok</td><td class="r">${q.f.num}</td><td class="r">${q.f.grade.toFixed(1)}</td><td><span class="chip">${q.f.topic}</span></td><td><span class="chip${tagCls}">${q.f.diff}</span></td><td><span class="hs" aria-hidden="true">${strip}</span></td></tr>`});
+ $('featBody').innerHTML=h})();
+const NOTES={
+ meta:'Text features alone misjudge Q3 (long and full of numbers, but routine) by +90% and Q4 (short, but needs a case analysis) by −55%. They give no sign that Q8 is out of reach, so it is planned like any other hard question.',
+ hid:'The hidden state gets Q3 and Q4 roughly right. It underestimates Q2 by 20% and Q5 by 25%, and its signal for Q8 is just strong enough to cap it.',
+ both:'Combined, every estimate is within about 20% of the true need, the uncertainty is narrower, and Q8 is flagged clearly. Q2 and Q5 are still a little underestimated; the margin and the re-planning step absorb that.'};
+// step 1: prediction plot (log scale 100..6000)
+function drawPred(){const s=$('predSvg');s.innerHTML='';const F=FS[feat];const L=150,R=870,T=26,rowH=36;const lo=Math.log(100),hi=Math.log(6000);const x=v=>L+(Math.log(v)-lo)/(hi-lo)*(R-L);
+ [100,200,500,1000,2000,5000].forEach(v=>{svgEl(s,'line',{class:'grid',x1:x(v),x2:x(v),y1:T-6,y2:T+rowH*N-6});svgEl(s,'text',{x:x(v),y:T+rowH*N+12,'text-anchor':'middle'},fmt(v))});
+ svgEl(s,'text',{x:(L+R)/2,y:T+rowH*N+30,'text-anchor':'middle'},'reasoning tokens (log scale)');
+ Q.forEach((q,i)=>{const y=T+i*rowH+8;const err=F.err[i],sig=F.sig[i];
+  svgEl(s,'text',{x:8,y:y+4,class:'lbl'},`Q${q.id}`);
+  svgEl(s,'text',{x:40,y:y+4},q.f.topic);
+  const p=q.n*err;
+  if(i===7){const fl=F.pfail>.7;
+   if(fl)svgEl(s,'rect',{x:L,y:y-12,width:R-L,height:24,rx:4,fill:'var(--bad)','fill-opacity':.12});
+   svgEl(s,'line',{x1:x(p/(1+sig*2)),x2:x(Math.min(5900,p*(1+sig*2))),y1:y,y2:y,stroke:'var(--accent)','stroke-width':2,'stroke-opacity':fl?.5:1});svgEl(s,'circle',{cx:x(p),cy:y,r:5,fill:'var(--accent)','fill-opacity':fl?.5:1});
+   svgEl(s,'text',{x:L+8,y:y+4,'text-anchor':'start',style:`fill:var(${fl?'--bad':'--warn'});font-weight:600`},fl?`P(unsolvable) = ${F.pfail.toFixed(2)} → capped at ${CAP} tokens`:`P(unsolvable) = ${F.pfail.toFixed(2)} → not flagged, planned as solvable`);return}
+  const a=p/(1+sig),b=p*(1+sig);
+  svgEl(s,'line',{x1:x(a),x2:x(b),y1:y,y2:y,stroke:'var(--accent)','stroke-width':2});
+  svgEl(s,'circle',{cx:x(p),cy:y,r:5,fill:'var(--accent)'});
+  svgEl(s,'rect',{x:x(q.n)-1,y:y-10,width:2,height:20,fill:'var(--ink)'});
+  const e=Math.round((err-1)*100);const big=Math.abs(e)>=20;
+  svgEl(s,'text',{x:Math.max(x(b),x(q.n))+8,y:y+4,style:big?'fill:var(--warn);font-weight:600':''},`${e>0?'+':''}${e}%`);
+ });
+ $('featNote').textContent=NOTES[feat];}
+// step 1b: effect of feature set
+function drawFeat(B){const s=$('featSvg');s.innerHTML='';const L=190,R=700,T=10,rh=42;const x=v=>L+v/8*(R-L);
+ for(let v=0;v<=8;v+=2){svgEl(s,'line',{class:'grid',x1:x(v),x2:x(v),y1:T,y2:T+rh*4});svgEl(s,'text',{x:x(v),y:T+rh*4+14,'text-anchor':'middle'},v)}
+ svgEl(s,'text',{x:(L+R)/2,y:T+rh*4+30,'text-anchor':'middle'},'correct answers (of 8)');
+ ['meta','hid','both','oracle'].forEach((k,j)=>{const r=evalM('sp',B,FS[k]);const c=r.oks.filter(Boolean).length;const y=T+j*rh+8;const sel=k===feat;
+  svgEl(s,'text',{x:L-10,y:y+15,'text-anchor':'end',class:'lbl',style:sel?'font-weight:700':''},FS[k].label);
+  svgEl(s,'rect',{x:L,y,width:Math.max(2,x(c)-L),height:22,rx:3,fill:k==='oracle'?'var(--ink3)':'var(--m-sp)','fill-opacity':sel||k==='oracle'?1:.45});
+  svgEl(s,'text',{x:x(c)+8,y:y+15,class:'lbl'},`${c} / 8`);
+  svgEl(s,'text',{x:R+30,y:y+15},c?`${fmt(r.tok*J_PER_TOK/c)} J per correct answer`:'—');
+ })}
+document.querySelectorAll('.seg button').forEach(btn=>btn.addEventListener('click',()=>{feat=btn.dataset.f;document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed',b===btn));computeFR();update();renderTrace(1)}));
+
+// step 2: allocation bars
+function drawAlloc(B){const s=$('allocSvg');s.innerHTML='';const L=60,R=880,T=14,gH=60;const vmax=Math.max(4000,...Q.map(q=>q.n))*1.02;const x=v=>L+Math.min(v,vmax)/vmax*(R-L);
+ [0,1000,2000,3000,4000].forEach(v=>{svgEl(s,'line',{class:'grid',x1:x(v),x2:x(v),y1:T-4,y2:T+gH*N});svgEl(s,'text',{x:x(v),y:T+gH*N+14,'text-anchor':'middle'},fmt(v))});
+ svgEl(s,'text',{x:(L+R)/2,y:T+gH*N+32,'text-anchor':'middle'},'allocated tokens');
+ const E={uni:evalM('uni',B),ps:evalM('ps',B),sp:evalM('sp',B)};
+ Q.forEach((q,i)=>{const y0=T+i*gH;svgEl(s,'text',{x:8,y:y0+28,class:'lbl'},`Q${q.id}`);
+  [['uni','--m-uni'],['ps','--m-ps'],['sp','--m-sp']].forEach(([k,c],j)=>{const y=y0+4+j*15;const b=E[k].b[i];const ok=E[k].oks[i];
+   svgEl(s,'rect',{x:L,y,width:Math.max(1,x(b)-L),height:11,rx:2,fill:`var(${c})`});
+   svgEl(s,'text',{x:x(b)+6,y:y+9,style:`fill:var(${ok?'--ok':'--bad'});font-weight:600`},`${fmt(b)} ${ok?'✓':'✗'}`)});
+  if(q.solv){svgEl(s,'rect',{x:x(q.n)-1,y:y0,width:2,height:50,fill:'var(--ink)'});svgEl(s,'rect',{x:x(G*q.n)-1,y:y0,width:2,height:50,fill:'var(--ink3)'})}
+  else svgEl(s,'text',{x:R,y:y0+28,'text-anchor':'end',style:'fill:var(--bad)'},'unsolvable');
+ })}
+
+// scoreboard
+function drawScore(B){const R=M.map(m=>({...m,...evalM(m.k,B)}));let h='';
+ R.forEach(r=>{const c=r.oks.filter(Boolean).length;const en=r.tok*J_PER_TOK;
+  h+=`<div class="card${r.k==='sp'?' best':''}"><div class="name"><i class="sw" style="background:var(${r.col})"></i>${r.name}</div><div class="how">${r.k==='sp'?`predict from ${feat==='both'?'text + hidden state':feat==='hid'?'hidden state':'text features'}, allocate, guide, re-plan`:r.how}</div>
+  <div class="big">${c}<small> / 8 correct</small></div><div class="dots" aria-label="per question">${r.oks.map((o,i)=>`<span class="dot ${o?'ok':'no'}" title="Q${i+1}">${i+1}</span>`).join('')}</div>
+  <dl class="kv"><dt>tokens used</dt><dd>${fmt(r.tok)}</dd><dt>energy</dt><dd>${(en/1000).toFixed(2)} kJ</dd><dt>per correct answer</dt><dd>${c?fmt(en/c)+' J':'—'}</dd></dl></div>`});
+ $('score').innerHTML=h;
+ const sp=R[3],un=R[0];const spC=sp.oks.filter(Boolean).length,unC=un.oks.filter(Boolean).length;
+ const ePer=x=>x.tok*J_PER_TOK/Math.max(1,x.oks.filter(Boolean).length);
+ $('scoreNote').textContent=`At B = ${fmt(B)}, our method answers ${spC} of 8 correctly against ${unC} for the uniform baseline, at ${Math.round((1-ePer(sp)/ePer(un))*100)}% lower energy per correct answer. Q8 is unsolvable for this model, so 7 of 8 is the ceiling.`}
+
+// step 4: loop lanes
+let loopTimer=null;
+function drawLoop(B,animate){const {L}=evalM('sp',B);const res=L.res;const vmax=Math.max(...res.map(r=>Math.max(r.b0,r.b,r.used)),CK)*1.05;const pct=v=>Math.min(100,v/vmax*100);
+ let h='';res.forEach((r,i)=>{const q=Q[i];const extra=Math.max(0,r.b-r.b0);const d=Math.round(r.b-r.b0);const ds=Math.abs(d)>=10?` <span style="color:var(--ink3)">(${d>0?'+':'−'}${fmt(Math.abs(d))})</span>`:'';const st=(r.ok?`<span style="color:var(--ok)">✓ ${fmt(r.used)}</span>`:`<span style="color:var(--bad)">✗ ${q.solv?fmt(r.used):'capped'}</span>`)+ds;
+  h+=`<div class="lane"><span class="qid">Q${q.id}</span><div class="track"><span class="b0" style="width:${pct(r.b0)}%"></span>${extra>0?`<span class="extra" style="left:${pct(r.b0)}%;width:${pct(extra)}%"></span>`:''}<span class="fill" data-w="${pct(r.used)}" style="width:${animate?0:pct(r.used)}%"></span><span class="ck" style="left:${pct(CK)}%"></span></div><span class="st">${st}</span></div>`});
+ $('lanes').innerHTML=h;
+ const spent=res.reduce((s,r)=>s+(r.phase===1?r.used:Math.min(r.b0,CK)),0);const left=B-spent;
+ const moved=res.reduce((s,r)=>s+Math.max(0,r.b-r.b0),0);
+ $('poolTxt').textContent=`${fmt(left)} of ${fmt(B)} tokens still unspent → re-planned; ${fmt(moved)} moved to under-funded questions`;
+ $('poolFill').style.width=Math.min(100,left/B*100)+'%';
+ if(animate){clearInterval(loopTimer);const fills=[...document.querySelectorAll('#lanes .fill')];let t=0;loopTimer=setInterval(()=>{t+=0.04;fills.forEach(f=>{f.style.width=Math.min(+f.dataset.w,t*100)+'%'});if(t>=1)clearInterval(loopTimer)},30)}}
+$('playLoop').addEventListener('click',()=>drawLoop(+Bin.value,true));
+
+// step 5: frontier
+const BS=[];for(let b=4000;b<=12000;b+=250)BS.push(b);
+let FR=[];function computeFR(){FR=M.map(m=>BS.map(b=>evalM(m.k,b).oks.filter(Boolean).length))}computeFR();
+function drawFront(B){const s=$('frontSvg');s.innerHTML='';const L=56,R=760,T=16,Bt=290;const x=v=>L+(v-4000)/8000*(R-L),y=v=>Bt-v/8*(Bt-T);
+ for(let v=0;v<=8;v+=2){svgEl(s,'line',{class:'grid',x1:L,x2:R,y1:y(v),y2:y(v)});svgEl(s,'text',{x:L-8,y:y(v)+4,'text-anchor':'end'},v)}
+ [4000,6000,8000,10000,12000].forEach(v=>svgEl(s,'text',{x:x(v),y:Bt+16,'text-anchor':'middle'},fmt(v)));
+ svgEl(s,'text',{x:(L+R)/2,y:Bt+36,'text-anchor':'middle'},'total budget B (tokens)');
+ svgEl(s,'text',{x:14,y:(T+Bt)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(T+Bt)/2})`},'correct answers (of 8)');
+ svgEl(s,'line',{x1:L,x2:R,y1:y(7),y2:y(7),stroke:'var(--ok)','stroke-dasharray':'4 3','stroke-opacity':.7});
+ svgEl(s,'text',{x:L+6,y:y(7)-5,style:'fill:var(--ok)'},'ceiling: 7 solvable questions');
+ const off=[-3,-1,1,3];
+ M.forEach((m,mi)=>{let d='';BS.forEach((b,j)=>{const xx=x(b),yy=y(FR[mi][j])+off[mi];if(j===0)d=`M${xx},${yy}`;else{const py=y(FR[mi][j-1])+off[mi];d+=` L${xx},${py} L${xx},${yy}`}});
+  svgEl(s,'path',{d,fill:'none',stroke:`var(${m.col})`,'stroke-width':m.k==='sp'?3:2});
+  });
+ const labs=M.map((m,mi)=>({m,y:y(FR[mi][FR[mi].length-1])+off[mi]+4})).sort((a,b)=>a.y-b.y);
+ for(let i=1;i<labs.length;i++)if(labs[i].y-labs[i-1].y<15)labs[i].y=labs[i-1].y+15;
+ labs.forEach(l=>svgEl(s,'text',{x:R+8,y:l.y,style:`fill:var(${l.m.col});font-weight:600`},l.m.name));
+ svgEl(s,'line',{x1:x(B),x2:x(B),y1:T,y2:Bt,stroke:'var(--accent)','stroke-width':1.5});
+ svgEl(s,'text',{x:x(B)+5,y:T+10,style:'fill:var(--accent)'},`B = ${fmt(B)}`);
+ const first=mi=>{const j=FR[mi].findIndex(v=>v>=7);return j<0?null:BS[j]};
+ const sp=first(3),ps2=first(2);
+ $('frontNote').innerHTML=`<b>Takeaway.</b> Our method solves every solvable question from B = ${fmt(sp)} tokens on. ${ps2?`Predictive Scheduling needs ${fmt(ps2)}.`:'Predictive Scheduling, uniform budgets and uniform guidance do not reach that point within 12,000 tokens, because truncation punishes underestimates and the unsolvable question absorbs budget.'}`}
+
+// step 3: traces
+const TR={
+ 1:{segs:[["Need 17 + 26.",8],["17 + 26 = 43.",10],["Let me double-check: 26 + 17 = 43.",22,1],["Alternatively, 17 + 20 = 37, plus 6 = 43.",30,1],["Wait, is 17 + 26 really 43? 10 + 20 = 30, 7 + 6 = 13, total 43.",48,1],["Yes, 43.",6,1]],ans:"43",need:24,nat:1080},
+ 2:{segs:[["Let the original price be p.",12],["After 20% off, 0.8p = 20.",20],["So p = 20 / 0.8 = 25.",22],["Check: 25 × 0.8 = 20. ✓",28,1],["Could the discount apply twice? No, it says 20% once.",60,1],["Answer is €25.",10]],ans:"€25",need:420,nat:1260},
+ 5:{segs:[["Domain: x ≥ 0.",12],["Let a = √x, then √(a² + 5) = 5 − a.",40],["Square: a² + 5 = 25 − 10a + a².",40],["So 10a = 20, a = 2, x = 4.",38],["Check: √9 + √4 = 3 + 2 = 5. ✓",44,1],["Is there another root? The squared equation was linear in a, so no.",70,1],["Also need 5 − a ≥ 0: a = 2 is fine.",40,1],["Therefore x = 4.",14]],ans:"x = 4",need:1700,nat:3060},
+ 7:{segs:[["2025 = 3⁴ · 5².",30],["Primes ≡ 1 (mod 4): only 5, exponent 2.",60],["r₂(n) = 4 · (2 + 1) = 12 for the 5-part; 3⁴ has even exponent, allowed.",120],["So there are 12 ordered integer pairs.",40],["List to verify: (0, ±45), (±45, 0), (±27, ±36), (±36, ±27).",160,1],["Count: 2 + 2 + 4 + 4 = 12. ✓",60,1]],ans:"12",need:3200,nat:4800},
+ 8:{segs:[["Set x = 0: f(f(y)) = f(0) + y² f(y).",40],["Try f ≡ 0: works.",30],["Try f(y) = cy: c(x + cy) = cx + c y³ … fails.",60],["Suppose f(a) = f(b); then a² f(a) = b² f(b) …",80],["Hmm, consider injectivity again …",60],["Try y such that f(y) = 0 …",60],["Back to x = 0 substitution …",60],["Maybe f is quadratic? f(y) = ky² …",80]],ans:null,need:Infinity,nat:Infinity},
+};
+// scale: segment token weights are relative; scale to question's need
+function traceFor(id){const t=TR[id];const q=Q[id-1];const base=t.segs.filter(s=>!s[2]).reduce((a,s)=>a+s[1],0);
+ const scale=q.solv?q.n/base:q.n/ t.segs.reduce((a,s)=>a+s[1],0)*0.6;return t.segs.map(s=>({txt:s[0],tok:s[1]*scale,opt:!!s[2]}))}
+let curQ=5, traceTimer=null;
+const picks=[1,2,5,7,8];
+$('qpick').innerHTML=picks.map(i=>`<button type="button" role="tab" aria-selected="${i===curQ}" data-q="${i}">Q${i}</button>`).join('');
+$('qpick').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;curQ=+b.dataset.q;[...$('qpick').children].forEach(c=>c.setAttribute('aria-selected',c===b));
+ const q=Q[curQ-1];$('tb').max=Math.max(1500,Math.round((q.solv?q.n*1.4:2600)/10)*10);$('tb').value=q.solv?Math.round(q.n*0.8/10)*10:1200;renderTrace(1)});
+$('tb').addEventListener('input',()=>renderTrace(1));
+$('playTrace').addEventListener('click',()=>{clearInterval(traceTimer);let p=0;traceTimer=setInterval(()=>{p+=0.025;renderTrace(Math.min(1,p));if(p>=1)clearInterval(traceTimer)},40)});
+function renderTrace(progress){const b=+$('tb').value;const fl=FS[feat].pfail>.7;$('tbv').textContent=fmt(b)+' tok';const q=Q[curQ-1];const segs=traceFor(curQ);
+ // forcing: natural order including optional re-checks, keeps going (overthinking) until budget
+ let fHtml='',fTok=0,cut=false;const lim=b*progress;
+ const natSegs=q.solv?segs:segs;let loopi=0;
+ const seq=[...natSegs];if(q.solv){/* overthinking continues with repeats */for(let k=0;k<6;k++)seq.push({txt:'Wait, let me re-check that once more …',tok:q.n*0.35,opt:true})}else{for(let k=0;k<20;k++)seq.push(natSegs[3+(k%5)])}
+ for(const s of seq){if(fTok+s.tok>lim){if(progress>=1||fTok+s.tok>b){const part=Math.max(0,Math.floor((b-fTok)/s.tok*s.txt.length));if(progress>=1||lim>=b){fHtml+=`<span>${s.txt.slice(0,part)}</span><span class="seg-cut"> ✂ [budget reached: thinking stopped]</span>\n`;fTok=b;cut=true}}break}
+  fTok+=s.tok;fHtml+=`<span${s.opt?'':''}>${s.txt}</span>\n`}
+ // did forcing reach the answer step?
+ const ansIdx=segs.findIndex((s,i)=>!s.opt&&i===segs.map(x=>!x.opt).lastIndexOf(true));
+ const needTok=q.solv?segs.filter(s=>!s.opt).reduce((a,s)=>a+s.tok,0)+segs.slice(0,ansIdx).filter(s=>s.opt).reduce((a,s)=>a+s.tok,0):Infinity;
+ const fOk=q.solv&&b>=q.n;
+ // guidance
+ let gHtml='',gTok=0;const tight=b<q.n;
+ if(q.solv){const ok=b>=G*q.n;for(const s of segs){if(gTok>=lim&&progress<1)break;
+   if(tight&&s.opt){gHtml+=`<span class="seg-skip">${s.txt}</span>\n`;continue}
+   if(!ok&&gTok+s.tok>b*0.85){gHtml+=`<span class="seg-ans">Running out of budget, concluding with best estimate.</span>\n`;gTok=b;break}
+   gTok+=s.tok;gHtml+=`<span>${s.txt}</span>\n`}
+  gTok=Math.min(gTok,b,q.n);if(progress>=1&&ok)gHtml+=`<span class="seg-ans">Answer: ${TR[curQ].ans}</span>`;else if(progress>=1&&!ok)gHtml+=`<span class="seg-ans" style="color:var(--bad)">Answer: (wrong guess)</span>`}
+ else if(fl){const capB=Math.min(b,CAP);gHtml+=`<span>${segs[0].txt}</span>\n<span>${segs[1].txt}</span>\n<span class="seg-ans">Flagged as likely unsolvable (P = ${FS[feat].pfail.toFixed(2)}) and capped at ${CAP} tokens. Best answer so far: f ≡ 0.</span>`;gTok=capB}else{gHtml+=segs.map(x=>`<span>${x.txt}</span>`).join('\n')+`\n<span class="seg-ans" style="color:var(--bad)">Not flagged with these features (P = ${FS[feat].pfail.toFixed(2)}), so it runs to its full budget and still fails.</span>`;gTok=b}
+ const fUsed=Math.min(fTok,b),gUsed=gTok*(progress>=1?1:progress);
+ $('fBody').innerHTML=fHtml+(progress>=1&&!cut&&fOk?`<span class="seg-ans">Answer: ${TR[curQ].ans}</span>`:'');
+ $('gBody').innerHTML=gHtml;
+ $('fUsed').textContent=`${fmt(fUsed)} / ${fmt(b)}`;$('gUsed').textContent=`${fmt(progress>=1?gTok:gUsed)} / ${fmt(q.solv||!fl?b:CAP)}`;
+ $('fMeter').style.width=Math.min(100,fUsed/b*100)+'%';$('gMeter').style.width=Math.min(100,(progress>=1?gTok:gUsed)/(q.solv||!fl?b:CAP)*100)+'%';
+ const done=progress>=1;
+ const fv=$('fVerdict'),gv=$('gVerdict');
+ fv.className='verdict '+(fOk?'ok':'no');fv.textContent=done?(fOk?'✓ correct':'✗ no answer'):'';
+ $('fNote').textContent=done?(fOk?(q.n*q.o>b?'but keeps re-checking until the budget is gone':'finished'):(q.solv?`needs ${fmt(q.n)} tokens to finish`:'never converges')):'';
+ const gOk=q.solv&&b>=G*q.n;gv.className='verdict '+(gOk?'ok':'no');gv.textContent=done?(gOk?'✓ correct':(q.solv?'✗ wrong':(fl?'✗ skipped, budget saved':'✗ wrong, full budget used'))):'';
+ $('gNote').textContent=done?(q.solv?(tight&&gOk?'dropped optional re-checks':(gOk?'stops when done':'budget below 75% of need')):(fl?`saves ${fmt(Math.max(0,b-CAP))} tokens for others`:'tokens spent for nothing')):'';
+}
+
+// ---------- update ----------
+function update(){const B=+Bin.value;$('Bval').textContent=fmt(B)+' tok';$('Bhint').textContent=`= ${fmt(B/N)} tokens per question if split evenly`;
+ drawScore(B);drawPred();drawFeat(B);drawAlloc(B);drawLoop(B,false);drawFront(B)}
+Bin.addEventListener('input',update);
+update();renderTrace(1);
+})();
+</script>
+</body>
+</html>
