@@ -148,6 +148,8 @@ svg .grid{stroke:var(--rule);stroke-dasharray:2 4}
 .c{display:inline-block;width:12px;height:12px;border-radius:50%;border:1.5px solid var(--ink2);vertical-align:middle}.c.f{background:var(--ink2)}.c.h{background:linear-gradient(90deg,var(--ink2) 50%,transparent 50%)}.pos tr.us .c{border-color:var(--m-sp)}.pos tr.us .c.f{background:var(--m-sp)}
 .pos tr.us td{background:var(--accent-soft);font-weight:600}
 
+.bg2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:760px){.bg2{grid-template-columns:minmax(0,1fr)}}
 .contrib{margin:0;padding-left:1.4em;display:grid;gap:12px;max-width:78ch}
 .contrib li{padding-left:.3em}
 .contrib li::marker{font-family:var(--f-head);font-weight:700;color:var(--accent)}
@@ -188,6 +190,35 @@ footer.note{margin-top:48px;padding-top:16px;border-top:1px solid var(--rule);fo
     </div>
     <div class="score" id="score" style="margin-top:10px"></div>
     <p class="small muted" style="margin-top:10px" id="scoreNote"></p>
+  </section>
+
+  <section class="step" id="background">
+    <div class="step-head" style="grid-template-columns:1fr">
+      <h2>How Predictive Scheduling and Budget Guidance work</h2>
+      <p class="muted">Our method combines these two ideas. Here is each one on its own, in a few seconds.</p>
+    </div>
+    <div class="bg2">
+      <div class="panel" style="display:grid;gap:10px;align-content:start">
+        <div><span class="eyebrow">Predictive Scheduling · Brown et al., 2026</span><h3 style="margin-top:4px">Decide how many tokens each query gets</h3></div>
+        <p class="small muted">Before generating, a small network reads the model's hidden state and predicts, for each query, the chance of a correct answer at each budget (the curves). The batch budget is then handed out in chunks: every chunk goes to the query whose chance rises most. When a query's budget runs out, the model is stopped.</p>
+        <svg id="psSvg" viewBox="0 0 440 250" style="width:100%;display:block" role="img" aria-label="Predicted probability of a correct answer versus budget for three queries, with greedy allocation"></svg>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button class="play" id="psStep" type="button">Give next 64 tokens</button>
+          <button class="toggle" id="psReset" type="button">Reset</button>
+          <span class="small mono" id="psTxt"></span>
+        </div>
+      </div>
+      <div class="panel" style="display:grid;gap:10px;align-content:start">
+        <div><span class="eyebrow">Budget Guidance · Li et al., 2025</span><h3 style="margin-top:4px">Make the model finish within its tokens</h3></div>
+        <p class="small muted">While the model thinks, a small predictor estimates how many more tokens it will need (the curve). If that is likely more than the budget left, the next-token probabilities are shifted towards wrapping up and away from re-checking. No retraining of the model, and no hard cut.</p>
+        <svg id="bgSvg" viewBox="0 0 440 250" style="width:100%;display:block" role="img" aria-label="Predicted remaining length and guided next-token probabilities"></svg>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <label for="bgLeft" class="small" style="font-weight:600;white-space:nowrap">Budget left</label>
+          <input id="bgLeft" type="range" min="0" max="1500" step="10" value="900" style="flex:1;min-width:120px;accent-color:var(--accent)">
+          <span class="small mono" id="bgTxt" style="min-width:9ch"></span>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- STEP 0 -->
@@ -345,7 +376,7 @@ footer.note{margin-top:48px;padding-top:16px;border-top:1px solid var(--rule);fo
     </div>
     <ol class="contrib">
       <li><b>Need estimation from text features and hidden states together.</b> One forward pass over the question gives both. The predictor outputs an estimated need with an uncertainty range and a probability that the question can't be solved, instead of a single number from one source.</li>
-      <li><b>Predictors judged by the allocation they produce.</b> We score a predictor by how many answers the batch loses when its estimates are used in place of the true needs, not by its average length error.</li>
+      <li><b>Predictors trained for the budget decision, not for exact length.</b> Being off by 30% on an easy question costs nothing if it still gets enough tokens; being off by 10% on a question close to its budget can flip the answer. So we train and compare predictors by how many questions end up wrong when the budget is split using their estimates, rather than by their average error in tokens.</li>
       <li><b>Allocation that plans for uncertainty and for failure.</b> Budgets are sized for guided decoding, padded where the estimate is unsure, and a question that looks unsolvable gets only a small cap, so it can't absorb the budget others need.</li>
       <li><b>A different budget for every question, kept without cutting the model off.</b> Budget Guidance has so far been used with one budget for all questions. We apply it per question, with targets that differ by two orders of magnitude within one batch.</li>
       <li><b>Re-planning while the batch runs.</b> At checkpoints, tokens left over by finished or capped questions are handed to questions that are running short, using the sharper remaining-length estimate available during generation.</li>
@@ -368,7 +399,7 @@ footer.note{margin-top:48px;padding-top:16px;border-top:1px solid var(--rule);fo
   </section>
 
   <footer class="note">
-    <span>About the toy model. Questions, features and numbers are made up to show the mechanism. Rules: with truncation a question is correct only if its budget covers its full need; with guidance, 75% of the need suffices and the model stops at its need or its budget; unsolvable questions are always wrong. Energy assumes 0.6 J per generated token.</span>
+    
     <span>Real preliminary results (GSM8K, MATH-500, four models) are on the <a href="../">Overview tab</a>.</span>
   </footer>
 </div>
@@ -594,6 +625,52 @@ function update(){const B=+Bin.value;$('Bval').textContent=fmt(B)+' tok';$('Bhin
  drawScore(B);drawPred();drawFeat(B);drawAlloc(B);drawLoop(B,false);drawFront(B)}
 Bin.addEventListener('input',update);
 update();renderTrace(1);
+
+// ---------- background: Predictive Scheduling ----------
+const PSQ=[{n:'A · easy',p:[0,.55,.88,.94,.96,.97,.97,.97,.97],c:'--m-guide'},{n:'B · medium',p:[0,.05,.22,.5,.74,.86,.9,.92,.93],c:'--m-ps'},{n:'C · hard',p:[0,0,.03,.08,.16,.28,.42,.55,.64],c:'--bad'}];
+const PS_TOTAL=8;let psAlloc=[0,0,0],psSteps=0,psLast=-1;
+function drawPS(){const s=$('psSvg');s.innerHTML='';const L=36,R=290,T=12,Bt=200;const x=k=>L+k/8*(R-L),y=v=>Bt-v*(Bt-T);
+ [0,.5,1].forEach(v=>{svgEl(s,'line',{class:'grid',x1:L,x2:R,y1:y(v),y2:y(v)});svgEl(s,'text',{x:L-6,y:y(v)+4,'text-anchor':'end'},v)});
+ [0,2,4,6,8].forEach(k=>svgEl(s,'text',{x:x(k),y:Bt+14,'text-anchor':'middle'},k*64));
+ svgEl(s,'text',{x:(L+R)/2,y:Bt+30,'text-anchor':'middle'},'budget (tokens)');
+ svgEl(s,'text',{x:L,y:T-2},'P(correct)');
+ PSQ.forEach((q,i)=>{let d='';q.p.forEach((v,k)=>d+=(k?'L':'M')+x(k)+','+y(v));svgEl(s,'path',{d,fill:'none',stroke:`var(${q.c})`,'stroke-width':2});
+  const a=psAlloc[i];svgEl(s,'circle',{cx:x(a),cy:y(q.p[a]),r:i===psLast?6:4.5,fill:`var(${q.c})`,stroke:'var(--panel)','stroke-width':2});
+  // allocation bars on the right
+  const by=T+18+i*58;svgEl(s,'text',{x:308,y:by-4,class:'lbl'},q.n);
+  for(let k=0;k<PS_TOTAL;k++)svgEl(s,'rect',{x:308+k*15,y:by,width:13,height:12,rx:2,fill:k<a?`var(${q.c})`:'var(--soft)'});
+  svgEl(s,'text',{x:308,y:by+28},`${a*64} tok · P = ${q.p[a].toFixed(2)}`)});
+ const left=PS_TOTAL-psSteps;const exp=PSQ.reduce((t,q,i)=>t+q.p[psAlloc[i]],0);
+ $('psTxt').textContent=left?`${left*64} of ${PS_TOTAL*64} tokens left · expected correct ${exp.toFixed(2)}`:`Budget used up · expected correct ${exp.toFixed(2)} of 3`;
+ $('psStep').disabled=!left;}
+$('psStep').addEventListener('click',()=>{if(psSteps>=PS_TOTAL)return;let best=-1,g=-1;PSQ.forEach((q,i)=>{const a=psAlloc[i];if(a<8){const d=q.p[a+1]-q.p[a];if(d>g){g=d;best=i}}});psAlloc[best]++;psSteps++;psLast=best;drawPS()});
+$('psReset').addEventListener('click',()=>{psAlloc=[0,0,0];psSteps=0;psLast=-1;drawPS()});
+// ---------- background: Budget Guidance ----------
+const GK=4,GTH=150; // Gamma(k=4, theta=150): mean 600 tokens still needed
+const gpdf=x=>{if(x<=0)return 0;return Math.pow(x,GK-1)*Math.exp(-x/GTH)/(6*Math.pow(GTH,GK))};
+const gcdf=x=>{if(x<=0)return 0;const z=x/GTH;let s=0,t=1;for(let n=0;n<GK;n++){s+=t;t*=z/(n+1)}return 1-Math.exp(-z)*s};
+const TOK=[{t:'"Wait, let me re-check …"',base:.34,stop:false},{t:'"Alternatively, …"',base:.22,stop:false},{t:'"Next, compute …"',base:.26,stop:false},{t:'"So the answer is …"',base:.18,stop:true}];
+function drawBG(){const s=$('bgSvg');s.innerHTML='';const left=+$('bgLeft').value;const F=gcdf(left);
+ $('bgTxt').textContent=`${fmt(left)} tok`;
+ // density plot
+ const L=14,R=426,T=14,Bt=92,X=1800;const x=v=>L+v/X*(R-L);let ymax=0;for(let v=0;v<=X;v+=20)ymax=Math.max(ymax,gpdf(v));const y=v=>Bt-v/ymax*(Bt-T);
+ let d=`M${x(0)},${Bt}`;for(let v=0;v<=X;v+=20)d+=`L${x(v)},${y(gpdf(v))}`;d+=`L${x(X)},${Bt}Z`;
+ let dd=`M${x(0)},${Bt}`;for(let v=0;v<=Math.min(left,X);v+=10)dd+=`L${x(v)},${y(gpdf(v))}`;dd+=`L${x(Math.min(left,X))},${Bt}Z`;
+ svgEl(s,'path',{d,fill:'var(--soft)',stroke:'var(--ink3)','stroke-width':1});
+ svgEl(s,'path',{d:dd,fill:'var(--accent)','fill-opacity':.35});
+ svgEl(s,'line',{x1:x(left),x2:x(left),y1:T-4,y2:Bt,stroke:'var(--accent)','stroke-width':2});
+ svgEl(s,'text',{x:L,y:T-2},'predicted tokens still needed');
+ svgEl(s,'text',{x:R,y:Bt+14,'text-anchor':'end'},`P(finishes within budget) = ${F.toFixed(2)}`);
+ // next-token bars: guided ∝ base · (F for continuing, 1 + 3(1−F) for concluding)
+ const w=TOK.map(k=>k.base*(k.stop?1+3*(1-F):Math.max(.05,F)));const Z=w.reduce((a,b)=>a+b,0);
+ svgEl(s,'text',{x:L,y:124},'next-token probability: original (outline) vs guided');
+ TOK.forEach((k,i)=>{const yy=134+i*28;const W=230;
+  svgEl(s,'text',{x:L,y:yy+13,class:'lbl'},k.t);
+  svgEl(s,'rect',{x:190,y:yy+2,width:W*k.base,height:14,rx:2,fill:'none',stroke:'var(--ink3)'});
+  svgEl(s,'rect',{x:190,y:yy+2,width:W*w[i]/Z,height:14,rx:2,fill:k.stop?'var(--ok)':'var(--accent)','fill-opacity':.8});
+  svgEl(s,'text',{x:190+W*Math.max(k.base,w[i]/Z)+6,y:yy+13},(w[i]/Z).toFixed(2))});}
+$('bgLeft').addEventListener('input',drawBG);
+drawPS();drawBG();
 })();
 </script>
 </body>
