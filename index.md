@@ -14,7 +14,7 @@ I received my Bachelor of Technology (B. Tech) degree in [<span style="color:blu
 
 Feel free to connect me at <a href="subha.cse143@gmail.com" target="_blank">subha[dot]cse143[at]gmail[dot]com</a>.
 
-[Google Scholar](https://scholar.google.com/citations?user=m4iT4HEAAAAJ&hl=en) | [ResearchGate](https://www.researchgate.net/profile/Subhendu-Khatuya/research) | [DBLP](https://dblp.org/pid/221/3374.html) | [LinkedIn](https://www.linkedin.com/in/subhendu-khatuya-543140a8/) | [GitHub](https://github.com/subhendukhatuya) | [CV](https://drive.google.com/file/d/1qVUJ-V5JU22zM_SPPS8UdkhXzsvLJEfJ/view?usp=sharing) | 
+[Google Scholar](https://scholar.google.com/citations?user=m4iT4HEAAAAJ&hl=en) | [ResearchGate](https://www.researchgate.net/profile/Subhendu-Khatuya/research) | [DBLP](https://dblp.org/pid/221/3374.html) | [LinkedIn](https://www.linkedin.com/in/subhendu-khatuya-phd-543140a8/) | [GitHub](https://github.com/subhendukhatuya) | [CV](https://drive.google.com/file/d/1qVUJ-V5JU22zM_SPPS8UdkhXzsvLJEfJ/view?usp=sharing) | 
 
   
 
